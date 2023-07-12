@@ -26,6 +26,11 @@ Validity criteria needs to be met in the `Solution` object:
 * Staff members can't work on two floors on a given work day (okay?)
 * More to come
 
+Secondary objectives:
+* Continuity of tasks per staff member
+    * Staff member A should do task 1 for all patients in a morning
+* Equal balancing of tasks
+
 ## Presenting the Solution
 
 Display a `Solution` object in some way that a staff member can follow. Needs to be printable, ideally an excel sheet that can edited.
