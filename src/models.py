@@ -27,7 +27,7 @@ class Shift(BaseModel):
 class StaffMember(BaseModel):
     name: str
     attributes: SkillSet
-    shift: Shift
+    #shift: Shift
 
 
 # Study related models
