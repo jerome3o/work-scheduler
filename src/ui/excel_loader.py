@@ -52,6 +52,10 @@ def output_directory_dialog():
     output_file_path = filedialog.askdirectory()
     copy_schedule_days(input_file_paths, output_file_path, input_schedule_days)
 
+# Function to find rows containing the tokens
+def find_token_row_index(token, df):
+    return df[df.apply(lambda row: row.astype(str).str.contains(token, case=False).any(), axis=1)].index
+
 
 def copy_schedule_days(input_files, output_file, day_tokens):
     # Create a new workbook for the output if it doesn't exist
@@ -68,6 +72,32 @@ def copy_schedule_days(input_files, output_file, day_tokens):
     i = 0
 
     for input_file in input_files:
+
+        df = pd.read_excel(input_file)
+
+        start_token = "Day " + str(input_schedule_days[i])
+        end_token = "Workbook"
+
+        start_index = find_token_row_index(start_token, df)
+        end_index = find_token_row_index(end_token, df)
+
+
+        if not start_index.empty and not end_index.empty:
+            start_index = start_index[0]
+            
+            # Find the first occurrence of the ending token after the start token
+            end_index = end_index[end_index > start_index][0]
+
+            # Extract the section of data between the tokens (excluding the tokens themselves)
+            selected_data = df.loc[start_index -4 : end_index]
+
+            # Save the extracted data to a new Excel file
+            selected_data.to_excel(output_file_name, index=False)
+        else:
+            print("Start and/or end tokens not found in the DataFrame.")
+
+
+        """
 
         study_day = day_tokens[i]
 
@@ -100,10 +130,11 @@ def copy_schedule_days(input_files, output_file, day_tokens):
             if is_copying and "Day" in str(cell_value) and str(study_day) not in str(cell_value):
                 is_copying = False
         i = i+1
-
+    
+        """
     
     # Save the output workbook
-    output_wb.save(output_file_name)
+    #output_wb.save(output_file_name)
     print(f"Success?")
 
 
