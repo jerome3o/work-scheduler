@@ -3,6 +3,8 @@ from tkinter import filedialog, ttk, simpledialog
 import pandas as pd
 import os
 import openpyxl
+from openpyxl import Workbook
+
 
 input_file_paths = []
 input_schedule_days = []
@@ -53,19 +55,24 @@ def output_directory_dialog():
 
 def copy_schedule_days(input_files, output_file, day_tokens):
     # Create a new workbook for the output if it doesn't exist
-    try:
-        output_wb = openpyxl.load_workbook(output_file)
-        output_sheet = output_wb.active
-    except FileNotFoundError:
-        output_wb = openpyxl.Workbook()
-        output_sheet = output_wb.active
+    output_file_name = os.path.join(output_file, "Daily_Schedules.xlsx")
+
+    if not os.path.exists(output_file_name):
+        output_wb = Workbook()
+        output_wb.save(output_file_name)
+    else:
+        output_wb = openpyxl.load_workbook(output_file_name)
+    
+    output_sheet = output_wb.active
     
     i = 0
 
     for input_file in input_files:
+
         study_day = day_tokens[i]
+
         # Load the input workbook
-        input_wb = openpyxl.load_workbook(input_file)
+        input_wb = openpyxl.load_workbook(input_file, data_only=True)
         input_sheet = input_wb.active
 
         # Initialize variables to track the section copying
@@ -85,7 +92,9 @@ def copy_schedule_days(input_files, output_file, day_tokens):
                 copied_rows += 1
 
                 # Write the row data to the output sheet
-                output_sheet.append(row)
+                text_values = [str(cell) if cell is not None else "" for cell in row]
+                output_sheet.append(text_values)
+                
 
             # Check if we are done copying after encountering the token again
             if is_copying and "Day" in str(cell_value) and str(study_day) not in str(cell_value):
@@ -94,7 +103,7 @@ def copy_schedule_days(input_files, output_file, day_tokens):
 
     
     # Save the output workbook
-    output_wb.save(output_file)
+    output_wb.save(output_file_name)
     print(f"Success?")
 
 
