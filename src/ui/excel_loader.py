@@ -6,7 +6,9 @@ import openpyxl
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import NamedStyle
-import datetime
+import json
+from datetime import datetime
+from src.models import Task
 
 
 input_file_paths = []
@@ -54,15 +56,20 @@ def open_file_dialog():
 
 def output_directory_dialog():
     output_file_path = filedialog.askdirectory()
-    copy_schedule_days(input_file_paths, output_file_path, input_schedule_days)
+    copy_schedule_days(input_file_paths, output_file_path)
 
 
-# Function to find rows containing the tokens
 def find_token_row_index(token, df):
     return df[df.apply(lambda row: row.astype(str).str.contains(token, case=False).any(), axis=1)].index
 
 
-def copy_schedule_days(input_files, output_file, day_tokens):
+def append_empty_rows(sheet, num_rows):
+    for _ in range(num_rows):
+        empty_row = [None] * sheet.max_column
+        sheet.append(empty_row)
+
+
+def copy_schedule_days(input_files, output_file):
     # Create a new workbook for the output if it doesn't exist
     output_file_name = os.path.join(output_file, "Daily_Schedules.xlsx")
     if not os.path.exists(output_file_name):
@@ -100,7 +107,7 @@ def copy_schedule_days(input_files, output_file, day_tokens):
                 sheet.append(row)
 
             # Define a custom style for datetime values
-            time_style = NamedStyle(name="time_style", number_format="hh:mm")
+            time_style = NamedStyle(name="time_style", number_format="HH:MM")
 
             # Formatting date time
             for row in sheet.iter_rows(min_row=sheet.max_row - len(selected_data) + 1, max_row=sheet.max_row):
@@ -120,8 +127,40 @@ def copy_schedule_days(input_files, output_file, day_tokens):
 
         else:
             print("Day not found in study schedule")
+        
+        append_empty_rows(sheet, 4)
 
-    print(f"Success?")
+        i=i+1
+
+        print(f"Success?")
+
+    
+def create_json_objects(input_schedule, output_json_file):
+    input_wb = openpyxl.load_workbook(input_schedule)
+    input_sheet = input_wb.active
+
+    # Get the headers from the first column (assuming they are in the first column)
+    #headers = [cell.value for cell in input_sheet.iter_cols(min_row=1, max_row=1, values_only=True)][0]
+
+    # Create a list to store all Task instances
+    all_tasks = []
+
+    # Create instances of Task and store them in the list
+    for row in input_sheet.iter_rows(min_row=2, values_only=True):
+        identifier = row[0]  # Assuming the first column contains unique identifiers
+        data_dict = dict(zip(identifier, row[1:]))  # Skip the first column (identifier)
+
+        # Convert datetime strings to datetime objects
+        for key, value in data_dict.items():
+            if isinstance(value, str) and key in ["start_after", "finish_before"]:
+                data_dict[key] = datetime.strptime(value, "%Y-%m-%d %H:%M")
+
+        instance = Task(**data_dict)
+        all_tasks.append(instance.model_dump())
+
+    # Save all Task instances in a single JSON file
+    with open(output_json_file, 'w') as json_file:
+        json.dump(all_tasks, json_file, indent=2)
 
 
 if __name__ == "__main__":
