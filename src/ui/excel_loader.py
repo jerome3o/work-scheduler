@@ -1,14 +1,14 @@
 import tkinter as tk
-from tkinter import filedialog, ttk, simpledialog
 import pandas as pd
 import os
 import openpyxl
+import json
+from tkinter import filedialog, ttk, simpledialog
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import NamedStyle
-import json
 from datetime import datetime
-from src.models import Task
+from src.models import TaskType
 
 
 input_file_paths = []
@@ -69,9 +69,9 @@ def append_empty_rows(sheet, num_rows):
         sheet.append(empty_row)
 
 
-def copy_schedule_days(input_files, output_file):
+def copy_schedule_days(input_files, output_file_directory):
     # Create a new workbook for the output if it doesn't exist
-    output_file_name = os.path.join(output_file, "Daily_Schedules.xlsx")
+    output_file_name = os.path.join(output_file_directory, "Daily_Schedules.xlsx")
     if not os.path.exists(output_file_name):
         output_wb = Workbook()
         output_wb.save(output_file_name)
@@ -134,33 +134,58 @@ def copy_schedule_days(input_files, output_file):
 
         print(f"Success?")
 
+        excel_to_json(output_file_name, output_file_directory)
+
+
+def assign_category(task_name):
+    # Enumerate task names based on keywords
+
+    doctor = ["EXAM", "EXAMINATION", "PHYSICAL", "DOCTOR", "ELIGIBILITY"]
+    nurse = ["DOSE", "PREDOSE", "AE", "ADVERSE", "MEDICATION", "ASSESS", "SITE", "ACCOUNTABILITY", "DISPENSE", "REPORTED", "INFUSION", "MONITOR"]
+    crt = ["BREAKFAST", "LUNCH", "DINNER", "SNACK", "SUPINE", "ECG", "VITAL", "VITALS", "ASSESSMENT", "COMMENCE", "BLOCK", "PREG", "DOA", "URINALYSIS", "URINE", "MSU", "WEIGHT", "BMI", "ALCOHOL", "CLEAN", "LINEN", "WALK"]
+    any = ["ADMIT", "WRIST", "WRISTBAND", "COMPLIANCE", "REMIND", "ENSURE", "RULES", "TOUR", "WORKBOOK", "DISCHARGE", "ENCOURAGE", "ORIENTATION", "RESTRICTIONS"]
+    phlebotomy = ["CANNULA", "CANNULATION", "BLOOD", "SAFETIES", "FLUSH"]
+    spiro = ["SPIROMETRY"]
+    sputum = ["SPUTUM"]
+    triplicate = ["TRIPLICATE"]
+    phone = ["PHONE"]
+    pharmacy = ["RANDOMISATION"]
+
+    assign_tasks = {'doctor' : doctor, 'nurse' : nurse, 'crt' : crt, 'any' : any, 'phlebotomy' : phlebotomy, 'spiro' : spiro, 'sputum' : sputum, 'triplicate' : triplicate, 'phone' : phone, 'pharmacy' : pharmacy}
+
+    task_type = "OTHER"
+
+    for assignment in assign_tasks:
+        for keyword in assign_tasks[assignment]:
+            if keyword in task_name:
+                task_type = str.upper(keyword)
     
-def create_json_objects(input_schedule, output_json_file):
-    input_wb = openpyxl.load_workbook(input_schedule)
-    input_sheet = input_wb.active
+    return TaskType.task_type
 
-    # Get the headers from the first column (assuming they are in the first column)
-    #headers = [cell.value for cell in input_sheet.iter_cols(min_row=1, max_row=1, values_only=True)][0]
 
-    # Create a list to store all Task instances
-    all_tasks = []
+def excel_to_json(schedules, json_file_directory):
+    # Read the Excel file into a pandas DataFrame
+    df = pd.read_excel(schedules)
+    
+    # Create a dictionary to store tasks by category
+    data = {}
+    
+    for row in df.iterrows():
+        task = row[0]
+        times = list(row[1:])
+        category = assign_category(task)
+        
+        # Create an instance of the appropriate Enum class based on the category
+        if category not in data:
+            data[category] = {}
+        data[category][task] = times
 
-    # Create instances of Task and store them in the list
-    for row in input_sheet.iter_rows(min_row=2, values_only=True):
-        identifier = row[0]  # Assuming the first column contains unique identifiers
-        data_dict = dict(zip(identifier, row[1:]))  # Skip the first column (identifier)
+    # Convert Enum keys to strings before writing to JSON
+    json_data = {str(key): value for key, value in data.items()}
 
-        # Convert datetime strings to datetime objects
-        for key, value in data_dict.items():
-            if isinstance(value, str) and key in ["start_after", "finish_before"]:
-                data_dict[key] = datetime.strptime(value, "%Y-%m-%d %H:%M")
-
-        instance = Task(**data_dict)
-        all_tasks.append(instance.model_dump())
-
-    # Save all Task instances in a single JSON file
-    with open(output_json_file, 'w') as json_file:
-        json.dump(all_tasks, json_file, indent=2)
+    # Write the dictionary to a JSON file
+    with open(json_file_directory, 'w') as f:
+        json.dump(json_data, f, indent=4)
 
 
 if __name__ == "__main__":
