@@ -139,6 +139,13 @@ def copy_schedule_days(input_files, output_file_directory):
         excel_to_json(output_file_name, output_file_directory)
 
 
+def extract_name_from_schedule(task_name, current_study):
+    if 'Schedule' in task_name:
+        return task_name.split('Schedule')[0].strip()
+    else:
+        return current_study
+
+
 def assign_category(task_name):
     # Enumerate task names based on keywords
 
@@ -153,8 +160,9 @@ def assign_category(task_name):
     phone = ["PHONE"]
     pharmacy = ["RANDOMISATION"]
     date = ["DATE"]
+    day = ["DAY"]
 
-    assign_tasks = {'doctor' : doctor, 'nurse' : nurse, 'crt' : crt, 'any' : any, 'phlebotomy' : phlebotomy, 'spiro' : spiro, 'sputum' : sputum, 'triplicate' : triplicate, 'phone' : phone, 'pharmacy' : pharmacy, 'date' : date}
+    assign_tasks = {'doctor' : doctor, 'nurse' : nurse, 'crt' : crt, 'any' : any, 'phlebotomy' : phlebotomy, 'spiro' : spiro, 'sputum' : sputum, 'triplicate' : triplicate, 'phone' : phone, 'pharmacy' : pharmacy, 'date' : date, 'day' : day}
 
     task_type = "OTHER"
 
@@ -175,7 +183,7 @@ def time_to_str(t):
 
 def excel_to_json(schedules, json_file_directory):
     # Read the Excel file into a pandas DataFrame
-    df = pd.read_excel(schedules)
+    df = pd.read_excel(schedules, header=None)
     
     # Create a dictionary to store tasks by category
     data = {}
@@ -186,23 +194,31 @@ def excel_to_json(schedules, json_file_directory):
     for row in df.itertuples(index=False, name=None):
         task = str(row[0])  # Access the first element of the tuple as the task name
         
-        if task == "nan" or task.strip() == '':
-            continue
-
-        #print(task)
-
-        times = [time_to_str(t) for t in row[1:] if pd.notna(t)]  # Convert times to strings
-
-        category = assign_category(task)
-
-        # Skip adding to data if all times are "nan"
-        if not times:
+        # Extract the date from the task name if "Schedule" is present
+        current_study = extract_name_from_schedule(task, current_study)
+        
+        # Skip rows with NaN task names, dates, or categories
+        if pd.isna(task):
             continue
         
+        # Convert times to strings and skip NaN values
+        times = [time_to_str(t) for t in row[1:] if pd.notna(t)]
+        
+        # Skip adding to data if all times are NaN
+        if not times:
+            continue
+
+        current_category = assign_category(task)
+        
         # Create an instance of the appropriate Enum class based on the category
-        if category not in data:
-            data[category] = {}
-        data[category][task] = times
+        if current_study not in data:
+            data[current_study] = {}
+        
+        if current_category not in data[current_study]:
+            data[current_study][current_category] = []
+        
+        # Append the task and times to the list for the category
+        data[current_study][current_category].append({"task": task, "times": times})
 
     # Convert Enum keys to strings before writing to JSON
     json_data = {str(key): value for key, value in data.items()}
@@ -212,6 +228,8 @@ def excel_to_json(schedules, json_file_directory):
     # Create the JSON file and write the dictionary into it
     with open(json_file_path, 'w') as f:
         json.dump(json_data, f, indent=4)
+
+    print(f"Created JSON file")
 
 
 if __name__ == "__main__":

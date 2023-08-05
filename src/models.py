@@ -42,6 +42,8 @@ class TaskType(Enum):   #KEY WORDS:
     PHONE       = 8     #PHONE --will be in day header row
     ANY         = 9     #ADMIT, WRIST, WRISTBAND, COMPLIANCE, REMIND, ENSURE, RULES, TOUR, WORKBOOK, DISCHARGE, ENCOURAGE, ORIENTATION, RESTRICTIONS
     PHARMACY    = 10    #RANDOMISATION
+    DATE        = 11    #DATE
+    DAY         = 12    #DAY
     OTHER       = 11    #default if no keywords are found
 
 
