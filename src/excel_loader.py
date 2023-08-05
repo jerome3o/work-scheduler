@@ -8,8 +8,7 @@ from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import NamedStyle
 from datetime import time
-from src.models import TaskType
-
+from models import TaskType
 
 input_file_paths = []
 input_schedule_days = []
@@ -166,7 +165,7 @@ def assign_category(task_name):
     
     #print(f"CATEGORY found for '{task_name}': {task_type}")
     
-    return TaskType.task_type
+    return task_type
 
 
 def time_to_str(t):
@@ -180,6 +179,9 @@ def excel_to_json(schedules, json_file_directory):
     
     # Create a dictionary to store tasks by category
     data = {}
+
+    current_category = None
+    current_study = None
     
     for row in df.itertuples(index=False, name=None):
         task = str(row[0])  # Access the first element of the tuple as the task name
