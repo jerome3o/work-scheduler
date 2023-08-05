@@ -7,7 +7,7 @@ from tkinter import filedialog, ttk, simpledialog
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import NamedStyle
-from datetime import datetime
+from datetime import time
 from src.models import TaskType
 
 
@@ -41,7 +41,7 @@ def create_window():
 
 
 def open_file_dialog():
-    file_path = filedialog.askopenfilename(filetypes=[("All Files", "*.*")])
+    file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx *.xls")])
     input_file_paths.append(file_path)
 
     file_name = file_path.split("/")[-1]  # Get only the filename from the path
@@ -117,6 +117,9 @@ def copy_schedule_days(input_files, output_file_directory):
                      # Check if the value is a datetime object and apply the custom style
                     if isinstance(source_cell, pd.Timestamp):
                         cell.style = time_style
+                    
+                    #preserve the row height
+                    sheet.row_dimensions[cell.row].height = sheet.row_dimensions[cell.row - sheet.max_row + len(selected_data)].height
 
             # Preserve column width
             for column_cells in sheet.columns:
@@ -132,7 +135,7 @@ def copy_schedule_days(input_files, output_file_directory):
 
         i=i+1
 
-        print(f"Success?")
+        print(f"Successfully created Daily_schedules.xslx")
 
         excel_to_json(output_file_name, output_file_directory)
 
@@ -150,17 +153,25 @@ def assign_category(task_name):
     triplicate = ["TRIPLICATE"]
     phone = ["PHONE"]
     pharmacy = ["RANDOMISATION"]
+    date = ["DATE"]
 
-    assign_tasks = {'doctor' : doctor, 'nurse' : nurse, 'crt' : crt, 'any' : any, 'phlebotomy' : phlebotomy, 'spiro' : spiro, 'sputum' : sputum, 'triplicate' : triplicate, 'phone' : phone, 'pharmacy' : pharmacy}
+    assign_tasks = {'doctor' : doctor, 'nurse' : nurse, 'crt' : crt, 'any' : any, 'phlebotomy' : phlebotomy, 'spiro' : spiro, 'sputum' : sputum, 'triplicate' : triplicate, 'phone' : phone, 'pharmacy' : pharmacy, 'date' : date}
 
     task_type = "OTHER"
 
     for assignment in assign_tasks:
         for keyword in assign_tasks[assignment]:
-            if keyword in task_name:
-                task_type = str.upper(keyword)
+            if keyword in str.upper(task_name):
+                task_type = str.upper(assignment)
+    
+    #print(f"CATEGORY found for '{task_name}': {task_type}")
     
     return TaskType.task_type
+
+
+def time_to_str(t):
+    # Convert time object to a string in HH:MM format
+    return t.strftime('%H:%M') if isinstance(t, time) else str(t)
 
 
 def excel_to_json(schedules, json_file_directory):
@@ -170,10 +181,21 @@ def excel_to_json(schedules, json_file_directory):
     # Create a dictionary to store tasks by category
     data = {}
     
-    for row in df.iterrows():
-        task = row[0]
-        times = list(row[1:])
+    for row in df.itertuples(index=False, name=None):
+        task = str(row[0])  # Access the first element of the tuple as the task name
+        
+        if task == "nan" or task.strip() == '':
+            continue
+
+        #print(task)
+
+        times = [time_to_str(t) for t in row[1:] if pd.notna(t)]  # Convert times to strings
+
         category = assign_category(task)
+
+        # Skip adding to data if all times are "nan"
+        if not times:
+            continue
         
         # Create an instance of the appropriate Enum class based on the category
         if category not in data:
@@ -183,8 +205,10 @@ def excel_to_json(schedules, json_file_directory):
     # Convert Enum keys to strings before writing to JSON
     json_data = {str(key): value for key, value in data.items()}
 
-    # Write the dictionary to a JSON file
-    with open(json_file_directory, 'w') as f:
+    json_file_path = os.path.join(json_file_directory, "JSON_schedules")
+
+    # Create the JSON file and write the dictionary into it
+    with open(json_file_path, 'w') as f:
         json.dump(json_data, f, indent=4)
 
 
