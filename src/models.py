@@ -10,13 +10,9 @@ from enum import Enum
 
 class Attribute(Enum):
     DOCTOR = "doctor"
-    PHLEBOTOMIST = "phlebotomist"
     NURSE = "nurse"
     TECHNICIAN = "technician"
-    RESEARCH_ASSISTANT = "research_assistant"
-
-
-SkillSet = List[Attribute]
+    PHLEBOTOMIST = "phlebotomist"
 
 
 class Shift(BaseModel):
@@ -25,26 +21,40 @@ class Shift(BaseModel):
     finish_time: datetime
 
 
+class TaskType(Enum):   #KEY WORDS:
+    DOCTOR          = 1     #EXAM, EXAMINATION, PHYSICAL, DOCTOR, ELIGIBILITY
+    NURSE           = 2     #DOSE, PREDOSE, AE, ADVERSE, MEDICATION, ASSESS, SITE, ACCOUNTABILITY, DISPENSE, REPORTED, MONITOR, PHONE
+    TEAM_LEAD       = 3
+    CRT             = 4     #BREAKFAST, LUNCH, DINNER, SNACK, SUPINE, ECG, VITAL, VITALS, ASSESSMENT, COMMENCE, BLOCK, PREG, DOA, URINALYSIS, URINE, MSU, WEIGHT, BMI, ALCOHOL, CLEAN, LINEN, WALK
+    PHLEBOTOMY      = 5     #BLOOD, SAFETIES, FLUSH
+    CANNULATION     = 6     #CANNULATION
+    INFUSION        = 7     #INF, "IV ", INTRAVENOUS
+    SPIRO           = 8     #SPIROMETRY
+    DOMINO_SPIRO    = 9
+    SPUTUM          = 10     #SPUTUM
+    PORTACATH       = 11
+    PAEDS_PORT      = 12
+    CYTOTOXIC       = 13
+    BREEZING        = 14
+    TRIPLICATE      = 15     #TRIPLICATE --must be same staff
+    ANY             = 16     #ADMIT, WRIST, WRISTBAND, COMPLIANCE, REMIND, ENSURE, RULES, TOUR, WORKBOOK, DISCHARGE, ENCOURAGE, ORIENTATION, RESTRICTIONS
+    PHARMACY        = 17    #RANDOMISATION
+    DATE            = 18    #DATE
+    DAY             = 19    #DAY
+    JAIPUR          = 20 
+    MISSION         = 21    #STUDY_NAME=MISSION
+    MISSION_ECG     = 22
+    OSPREY          = 23    #ELECTROPORATION
+    OTHER           = 24    #default if no keywords are found
+
+
+SkillSet = List[TaskType]
+
+
 class StaffMember(BaseModel):
     name: str
+    shift: Shift
     attributes: SkillSet
-    #shift: Shift
-
-
-class TaskType(Enum):   #KEY WORDS:
-    DOCTOR      = 1     #EXAM, EXAMINATION, PHYSICAL, DOCTOR, ELIGIBILITY
-    NURSE       = 2     #DOSE, PREDOSE, AE, ADVERSE, MEDICATION, ASSESS, SITE, ACCOUNTABILITY, DISPENSE, REPORTED, INFUSION, MONITOR
-    CRT         = 3     #BREAKFAST, LUNCH, DINNER, SNACK, SUPINE, ECG, VITAL, VITALS, ASSESSMENT, COMMENCE, BLOCK, PREG, DOA, URINALYSIS, URINE, MSU, WEIGHT, BMI, ALCOHOL, CLEAN, LINEN, WALK
-    PHLEBOTOMY  = 4     #CANNULA, CANNULATION, BLOOD, SAFETIES, FLUSH
-    SPIRO       = 5     #SPIROMETRY
-    SPUTUM      = 6     #SPUTUM
-    TRIPLICATE  = 7     #TRIPLICATE --must be same staff
-    PHONE       = 8     #PHONE --will be in day header row
-    ANY         = 9     #ADMIT, WRIST, WRISTBAND, COMPLIANCE, REMIND, ENSURE, RULES, TOUR, WORKBOOK, DISCHARGE, ENCOURAGE, ORIENTATION, RESTRICTIONS
-    PHARMACY    = 10    #RANDOMISATION
-    DATE        = 11    #DATE
-    DAY         = 12    #DAY
-    OTHER       = 11    #default if no keywords are found
 
 
 # Study related models

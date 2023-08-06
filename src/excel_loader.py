@@ -223,7 +223,7 @@ def excel_to_json(schedules, json_file_directory):
     # Convert Enum keys to strings before writing to JSON
     json_data = {str(key): value for key, value in data.items()}
 
-    json_file_path = os.path.join(json_file_directory, "JSON_schedules")
+    json_file_path = os.path.join(json_file_directory, "JSON_schedules.json")
 
     # Create the JSON file and write the dictionary into it
     with open(json_file_path, 'w') as f:
