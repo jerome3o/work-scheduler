@@ -21,31 +21,30 @@ class Shift(BaseModel):
     finish_time: datetime
 
 
-class TaskType(Enum):   #KEY WORDS:
-    DOCTOR          = 1     #EXAM, EXAMINATION, PHYSICAL, DOCTOR, ELIGIBILITY
-    NURSE           = 2     #DOSE, PREDOSE, AE, ADVERSE, MEDICATION, ASSESS, SITE, ACCOUNTABILITY, DISPENSE, REPORTED, MONITOR, PHONE
-    TEAM_LEAD       = 3
-    CRT             = 4     #BREAKFAST, LUNCH, DINNER, SNACK, SUPINE, ECG, VITAL, VITALS, ASSESSMENT, COMMENCE, BLOCK, PREG, DOA, URINALYSIS, URINE, MSU, WEIGHT, BMI, ALCOHOL, CLEAN, LINEN, WALK
-    PHLEBOTOMY      = 5     #BLOOD, SAFETIES, FLUSH
-    CANNULATION     = 6     #CANNULATION
-    INFUSION        = 7     #INF, "IV ", INTRAVENOUS
-    SPIRO           = 8     #SPIROMETRY
-    DOMINO_SPIRO    = 9
-    SPUTUM          = 10     #SPUTUM
-    PORTACATH       = 11
-    PAEDS_PORT      = 12
-    CYTOTOXIC       = 13
-    BREEZING        = 14
-    TRIPLICATE      = 15     #TRIPLICATE --must be same staff
-    ANY             = 16     #ADMIT, WRIST, WRISTBAND, COMPLIANCE, REMIND, ENSURE, RULES, TOUR, WORKBOOK, DISCHARGE, ENCOURAGE, ORIENTATION, RESTRICTIONS
-    PHARMACY        = 17    #RANDOMISATION
-    DATE            = 18    #DATE
-    DAY             = 19    #DAY
-    JAIPUR          = 20 
-    MISSION         = 21    #STUDY_NAME=MISSION
-    MISSION_ECG     = 22
-    OSPREY          = 23    #ELECTROPORATION
-    OTHER           = 24    #default if no keywords are found
+class TaskType(Enum):       #KEY WORDS:
+    DOCTOR          = "doctor"     #EXAM, EXAMINATION, PHYSICAL, DOCTOR, ELIGIBILITY
+    NURSE           = "nurse"     #DOSE, PREDOSE, AE, ADVERSE, MEDICATION, ASSESS, SITE, ACCOUNTABILITY, DISPENSE, REPORTED, MONITOR, PHONE
+    CRT             = "crt"     #BREAKFAST, LUNCH, DINNER, SNACK, MEAL, SUPINE, ECG, VITAL, VITALS, COMMENCE, BLOCK, PREG, DOA, URINALYSIS, URINE, MSU, WEIGHT, BMI, ALCOHOL, CLEAN, LINEN, WALK
+    PHLEBOTOMY      = "phlebotomy"     #BLOOD, SAFETIES, FLUSH
+    CANNULATION     = "cannulation"     #CANNULATION
+    INFUSION        = "infusion"     #INF, "IV ", INTRAVENOUS
+    SPIRO           = "spiro"     #SPIROMETRY
+    DOMINO_SPIRO    = "domino_spiro"     #if STUDY_NAME=DOMINO, SPIRO, SPIROMETRY
+    SPUTUM          = "sputum"     #SPUTUM
+    PORTACATH       = "portacath"    #PORT,
+    PAEDS_PORT      = "paeds_port"    #if STUDY_NAME=MISSION, PORT
+    CYTOTOXIC       = "cytotoxic"    
+    BREEZING        = "breezing"    #REE
+    TRIPLICATE      = "triplicate"    #TRIPLICATE --must be same staff
+    ANY             = "any"    #ADMIT, WRIST, WRISTBAND, COMPLIANCE, REMIND, ENSURE, RULES, TOUR, WORKBOOK, DISCHARGE, ENCOURAGE, ORIENTATION, RESTRICTIONS
+    PHARMACY        = "pharmacy"    #RANDOMISATION
+    DATE            = "date"    #DATE
+    DAY             = "day"    #DAY
+    JAIPUR          = "jaipur"    #if STUDY_NAME=JAIPUR, DOSE
+    MISSION         = "mission"    #STUDY_NAME=MISSION
+    MISSION_ECG     = "mission_ecg"    #if STUDY_NAME=MISSION, ECG
+    OSPREY          = "osprey"    #ELECTROPORATION
+    OTHER           = "other"    #default if no keywords are found
 
 
 SkillSet = List[TaskType]
