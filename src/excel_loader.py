@@ -81,6 +81,8 @@ def copy_schedule_days(input_files, output_file_directory):
 
     for input_file in input_files:
 
+        study_name = input_file.strip()
+
         df = pd.read_excel(input_file)
 
         start_token = "Day " + str(input_schedule_days[i])
@@ -95,8 +97,8 @@ def copy_schedule_days(input_files, output_file_directory):
             # Find the first occurrence of the ending token after the start token
             end_index = end_index[end_index > start_index][0]
 
-            # Extract the section of data between the tokens (excluding the tokens themselves)
-            selected_data = df.loc[start_index - 4: end_index, df.columns != df.columns[0]]  # Exclude the first column from being copied
+            # Extract the section of data between the start token and the end token
+            selected_data = df.loc[start_index : end_index, df.columns != df.columns[0]]  # Exclude the first column from being copied
 
             # Get the selected sheet to copy data
             sheet = output_wb.active
@@ -148,16 +150,16 @@ def extract_name_from_schedule(task_name, current_study):
         return current_study
 
 
-
 def assign_category(task_name):
     # Enumerate task names based on keywords
 
     assign_tasks = {
-        "doctor": ["EXAM", "EXAMINATION", "PHYSICAL", "DOCTOR", "ELIGIBILITY"],
-        "nurse": [
+        TaskType.DOCTOR: ["EXAM", "EXAMINATION", "PHYSICAL", "DOCTOR", "ELIGIBILITY"],
+        TaskType.NURSE: [
             " PLACEBO",
             "DOSING",
             "AE CHECK",
+            "CHECK AE",
             "ADVERSE",
             "MEDICATION",
             "SITE",
@@ -166,7 +168,7 @@ def assign_category(task_name):
             "REPORTED",
             "PHONE"
         ],
-        "crt": [
+        TaskType.CRT: [
             "SUBJECT",
             "STANDARDISED",
             "STANDARDIZED",
@@ -197,7 +199,7 @@ def assign_category(task_name):
             "LINEN",
             "WALK"
         ],
-        "any": [
+        TaskType.ANY: [
             "ADMIT",
             "WRIST",
             "WRISTBAND",
@@ -212,27 +214,24 @@ def assign_category(task_name):
             "ORIENTATION",
             "RESTRICTIONS",
         ],
-        "phlebotomy": ["BLOOD", "SAFETIES", "FLUSH"],
-        "cannulation": ["CANNULATION"],
-        "infusion": ["INF", "IV ", "INTRAVENOUS"],
-        "spiro": ["SPIROMETRY"],
-        "sputum": ["SPUTUM"],
-        "breezing": ["REE ASSESSMENT"],
-        "triplicate": ["TRIPLICATE"],
-        "pharmacy": ["RANDOMISATION", "RANDOMIZATION"],
-        "date": ["DATE"],
-        "day": ["DAY"]
+        TaskType.PHLEBOTOMY: ["BLOOD", "SAFETIES", "FLUSH"],
+        TaskType.CANNULATION: ["CANNULATION"],
+        TaskType.INFUSION: ["INF ", "IV ", "INTRAVENOUS"],
+        TaskType.SPIRO: ["SPIROMETRY"],
+        TaskType.SPUTUM: ["SPUTUM"],
+        TaskType.BREEZING: ["REE ASSESSMENT"],
+        TaskType.TRIPLICATE: ["TRIPLICATE"],
+        TaskType.PHARMACY: ["RANDOMISATION", "RANDOMIZATION"],
+        TaskType.DATE: ["DATE"],
+        TaskType.DAY: ["DAY"]
     }
-
-    task_type = "OTHER"
 
     for assignment in assign_tasks:
         for keyword in assign_tasks[assignment]:
             if keyword in str.upper(task_name):
-                task_type = str.upper(assignment)
-                return task_type
+                return assignment
         
-    return task_type
+    return TaskType.OTHER
 
 
 def time_to_str(t):
@@ -253,7 +252,7 @@ def excel_to_json(schedules, json_file_directory):
     for row in df.itertuples(index=False, name=None):
         task = str(row[0])  # Access the first element of the tuple as the task name
         
-        # Extract the date from the task name if "Schedule" is present
+        # Extract the study name from the task name if "Schedule" is present
         current_study = extract_name_from_schedule(task, current_study)
         
         # Convert times to strings and skip NaN values
@@ -263,7 +262,7 @@ def excel_to_json(schedules, json_file_directory):
         if task == "nan":
            continue
 
-        current_category = assign_category(task)
+        current_category = assign_category(task).value
         
         # Create an instance of the appropriate Enum class based on the category
         if current_study not in data:
