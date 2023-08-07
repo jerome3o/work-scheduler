@@ -58,26 +58,19 @@ class StaffMember(BaseModel):
 
 # Study related models
 class Task(BaseModel):
+    study: str
+    patient: str
     start_after: datetime
     finish_before: datetime
     duration: int
     blocked_by: List["Task"] = Field(default_factory=list)
+    # This is a list because some tasks may require multiple people
     required_attributes: List[SkillSet]
     title: str
 
 
-class Patient(BaseModel):
-    name: str
-    tasks: List[Task]
-
-
-class StudySchedule(BaseModel):
-    patients: List[Patient]
-    floor_number: int
-
-
 class WorkDay(BaseModel):
-    schedules: List[StudySchedule]
+    tasks: List[Task]
     staff: List[StaffMember]
 
 
