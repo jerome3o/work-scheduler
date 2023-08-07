@@ -1,4 +1,7 @@
 test_data/
+data/
+outputs/
+scratch/
 .vscode/
 
 # Byte-compiled / optimized / DLL files
