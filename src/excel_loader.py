@@ -142,27 +142,87 @@ def copy_schedule_days(input_files, output_file_directory):
 def extract_name_from_schedule(task_name, current_study):
     if 'Schedule' in task_name:
         return task_name.split('Schedule')[0].strip()
+        #print({task_name}, {current_study})
     else:
+        #print({task_name}, {current_study})
         return current_study
+
 
 
 def assign_category(task_name):
     # Enumerate task names based on keywords
 
-    doctor = ["EXAM", "EXAMINATION", "PHYSICAL", "DOCTOR", "ELIGIBILITY"]
-    nurse = ["DOSE", "PREDOSE", "AE", "ADVERSE", "MEDICATION", "ASSESS", "SITE", "ACCOUNTABILITY", "DISPENSE", "REPORTED", "INFUSION", "MONITOR"]
-    crt = ["BREAKFAST", "LUNCH", "DINNER", "SNACK", "SUPINE", "ECG", "VITAL", "VITALS", "ASSESSMENT", "COMMENCE", "BLOCK", "PREG", "DOA", "URINALYSIS", "URINE", "MSU", "WEIGHT", "BMI", "ALCOHOL", "CLEAN", "LINEN", "WALK"]
-    any = ["ADMIT", "WRIST", "WRISTBAND", "COMPLIANCE", "REMIND", "ENSURE", "RULES", "TOUR", "WORKBOOK", "DISCHARGE", "ENCOURAGE", "ORIENTATION", "RESTRICTIONS"]
-    phlebotomy = ["CANNULA", "CANNULATION", "BLOOD", "SAFETIES", "FLUSH"]
-    spiro = ["SPIROMETRY"]
-    sputum = ["SPUTUM"]
-    triplicate = ["TRIPLICATE"]
-    phone = ["PHONE"]
-    pharmacy = ["RANDOMISATION"]
-    date = ["DATE"]
-    day = ["DAY"]
-
-    assign_tasks = {'doctor' : doctor, 'nurse' : nurse, 'crt' : crt, 'any' : any, 'phlebotomy' : phlebotomy, 'spiro' : spiro, 'sputum' : sputum, 'triplicate' : triplicate, 'phone' : phone, 'pharmacy' : pharmacy, 'date' : date, 'day' : day}
+    assign_tasks = {
+        "doctor": ["EXAM", "EXAMINATION", "PHYSICAL", "DOCTOR", "ELIGIBILITY"],
+        "nurse": [
+            " PLACEBO",
+            "DOSING",
+            "AE CHECK",
+            "ADVERSE",
+            "MEDICATION",
+            "SITE",
+            "ACCOUNTABILITY",
+            "DISPENSE",
+            "REPORTED",
+            "PHONE"
+        ],
+        "crt": [
+            "SUBJECT",
+            "STANDARDISED",
+            "STANDARDIZED",
+            "BREAKFAST",
+            "LUNCH",
+            "DINNER",
+            "SNACK",
+            "MEAL",
+            "SUPINE",
+            "SEMI",
+            "ECG",
+            "VITAL",
+            "VITALS",
+            "STATS",
+            "SATS ",
+            "COMMENCE",
+            "BLOCK",
+            "PREG",
+            "DOA",
+            "URINALYSIS",
+            "URINE",
+            "MSU",
+            "WEIGHT",
+            "HEIGHT",
+            "BMI",
+            "ALCOHOL",
+            "CLEAN",
+            "LINEN",
+            "WALK"
+        ],
+        "any": [
+            "ADMIT",
+            "WRIST",
+            "WRISTBAND",
+            "COMPLIANCE",
+            "REMIND",
+            "ENSURE",
+            "RULES",
+            "TOUR",
+            "WORKBOOK",
+            "DISCHARGE",
+            "ENCOURAGE",
+            "ORIENTATION",
+            "RESTRICTIONS",
+        ],
+        "phlebotomy": ["BLOOD", "SAFETIES", "FLUSH"],
+        "cannulation": ["CANNULATION"],
+        "infusion": ["INF", "IV ", "INTRAVENOUS"],
+        "spiro": ["SPIROMETRY"],
+        "sputum": ["SPUTUM"],
+        "breezing": ["REE ASSESSMENT"],
+        "triplicate": ["TRIPLICATE"],
+        "pharmacy": ["RANDOMISATION", "RANDOMIZATION"],
+        "date": ["DATE"],
+        "day": ["DAY"]
+    }
 
     task_type = "OTHER"
 
@@ -170,9 +230,8 @@ def assign_category(task_name):
         for keyword in assign_tasks[assignment]:
             if keyword in str.upper(task_name):
                 task_type = str.upper(assignment)
-    
-    #print(f"CATEGORY found for '{task_name}': {task_type}")
-    
+                return task_type
+        
     return task_type
 
 
@@ -189,7 +248,7 @@ def excel_to_json(schedules, json_file_directory):
     data = {}
 
     current_category = None
-    current_study = None
+    current_study = "Unknown"
     
     for row in df.itertuples(index=False, name=None):
         task = str(row[0])  # Access the first element of the tuple as the task name
@@ -197,16 +256,12 @@ def excel_to_json(schedules, json_file_directory):
         # Extract the date from the task name if "Schedule" is present
         current_study = extract_name_from_schedule(task, current_study)
         
-        # Skip rows with NaN task names, dates, or categories
-        if pd.isna(task):
-            continue
-        
         # Convert times to strings and skip NaN values
         times = [time_to_str(t) for t in row[1:] if pd.notna(t)]
         
-        # Skip adding to data if all times are NaN
-        if not times:
-            continue
+        # Skip adding to data if task is NaN
+        if task == "nan":
+           continue
 
         current_category = assign_category(task)
         
