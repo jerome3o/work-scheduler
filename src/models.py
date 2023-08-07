@@ -71,7 +71,7 @@ class Task(BaseModel):
 
 class WorkDay(BaseModel):
     tasks: List[Task]
-    staff: List[StaffMember]
+    staff_members: List[StaffMember]
 
 
 # Solution related models

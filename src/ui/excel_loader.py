@@ -1,14 +1,17 @@
 import tkinter as tk
-import pandas as pd
 import os
-import openpyxl
 import json
 from tkinter import filedialog, ttk, simpledialog
+from datetime import time
+from typing import List
+
+import pandas as pd
+import openpyxl
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import NamedStyle
-from datetime import time
-from models import TaskType
+
+from src.models import TaskType, StaffMember, Task, WorkDay
 
 input_file_paths = []
 input_schedule_days = []
@@ -139,6 +142,25 @@ def copy_schedule_days(input_files, output_file_directory):
         print(f"Successfully created Daily_schedules.xslx")
 
         excel_to_json(output_file_name, output_file_directory)
+
+        # TODO(liv): 
+        #   Generate a list of Staff members for the day (of type StaffMember)
+        #   Generate a list of tasks for the relevant studies (of type Task)
+        #   Put that all into a WorkDay object
+        # # Might look something like:
+
+        # staff_members: List[StaffMember] = get_staff_members(...)
+        # tasks: List[Task] = get_tasks(...)
+        # work_day = WorkDay(
+        #     tasks=tasks,
+        #     staff_members=staff_members,
+        # )
+
+        # # save to json
+        # with open("outputs/work_day.json", "w") as f:
+        #     f.write(work_day.json(indent=4))
+        
+        
 
 
 def extract_name_from_schedule(task_name, current_study):
