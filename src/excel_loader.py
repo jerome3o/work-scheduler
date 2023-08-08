@@ -1,6 +1,7 @@
 import tkinter as tk
 import os
 import json
+import xlwings as xw
 from tkinter import filedialog, ttk, simpledialog
 from datetime import time
 from typing import List
@@ -11,10 +12,12 @@ from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import NamedStyle
 
-from src.models import TaskType, StaffMember, Task, WorkDay
+from models import TaskType, StaffMember, Task, WorkDay, Shift
+import staff
 
 input_file_paths = []
 input_schedule_days = []
+input_roster = ""
 
 
 def create_window():
@@ -24,6 +27,9 @@ def create_window():
 
     file_select_button = tk.Button(root, text="Select Schedule", command=open_file_dialog)
     file_select_button.pack(pady=10)
+
+    roster_select_button = tk.Button(root, text="Select Roster", command=open_roster_dialog)
+    roster_select_button.pack(pady=10)
 
     global file_table
     columns = ("Study Schedule", "Day")
@@ -56,6 +62,15 @@ def open_file_dialog():
     file_table.insert("", "end", values=(file_name, day))
 
 
+def open_roster_dialog():
+    input_roster = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx *.xls")])
+    day = simpledialog.askstring("Enter Day", f"Enter the schedule date:")
+
+    print(input_roster)
+
+    get_staff_shifts(input_roster, day)
+
+
 def output_directory_dialog():
     output_file_path = filedialog.askdirectory()
     copy_schedule_days(input_file_paths, output_file_path)
@@ -84,7 +99,9 @@ def copy_schedule_days(input_files, output_file_directory):
 
     for input_file in input_files:
 
-        study_name = input_file.strip()
+        file_name = input_file.split("/")[-1]
+
+        study_name = file_name.split()[0]
 
         df = pd.read_excel(input_file)
 
@@ -100,8 +117,15 @@ def copy_schedule_days(input_files, output_file_directory):
             # Find the first occurrence of the ending token after the start token
             end_index = end_index[end_index > start_index][0]
 
+            # Create a DataFrame for the study name row
+            name_row = [[study_name] * len(df.columns)]
+            name_row_df = pd.DataFrame(name_row, columns=df.columns)
+
             # Extract the section of data between the start token and the end token
             selected_data = df.loc[start_index : end_index, df.columns != df.columns[0]]  # Exclude the first column from being copied
+
+            # Combine the name row DataFrame with the selected_data DataFrame
+            named_data = pd.concat([name_row_df, selected_data], ignore_index=True)
 
             # Get the selected sheet to copy data
             sheet = output_wb.active
@@ -160,16 +184,60 @@ def copy_schedule_days(input_files, output_file_directory):
         # with open("outputs/work_day.json", "w") as f:
         #     f.write(work_day.json(indent=4))
         
-        
 
+def get_staff_shifts(roster_path, day):
+    staff = List[StaffMember]
 
-def extract_name_from_schedule(task_name, current_study):
-    if 'Schedule' in task_name:
-        return task_name.split('Schedule')[0].strip()
-        #print({task_name}, {current_study})
-    else:
-        #print({task_name}, {current_study})
-        return current_study
+    shift_ranges = {
+    'morning_short': ['D15:D25'],               #for shifts 0730-1330
+    'morning_long': ['H15:H25', 'L15:L25'],     #for shifts 0700-1500    
+    'morning_late': ['P15:P25'],                #for shifts 0800-1600
+    'afternoon': ['H27:H32', 'L27:L32'],        #for shifts 1430-2230
+    'night': ['H34:H37', 'L34:L37']             #for shifts 2200-0730
+    }
+
+    # Load the workbook
+    app = xw.App(visible=False)
+    wb = app.books.open(roster_path, password='nzcr')
+    sheet = wb.sheets[day]
+    
+    rostered = {}
+    
+    for category, column_ranges in shift_ranges.items():
+        data = []
+        for column_range in column_ranges:
+            column_cells = sheet[column_range]
+            for cell in column_cells:
+                cell_value = cell.value
+                if cell_value is not None:  # Skip empty cells
+                    data.append(cell_value.split()[0])
+        rostered[category] = data
+
+    wb.close()
+    app.quit()
+
+    for category, data in rostered.items():
+        print(f"{category}:", data)
+    
+    get_staff_members(rostered)
+
+def get_staff_members(rostered):
+
+    shift_types = {
+    'morning_short' : Shift(start_time=time(7, 30), finish_time=time(13, 30)),
+    'morning_long' : Shift(start_time = time(7, 00), end_time=time(15, 00)),
+    'morning_late' : Shift(start_time = time(8, 00), end_time=time(16, 00)),
+    'afternoon' : Shift(start_time = time(14, 30), end_time=time(22, 30)),
+    'night' : Shift(start_time = time(22, 00), end_time=time(7, 30)),
+    }
+
+    staff_members = List(StaffMember)
+
+    for shifts in rostered:
+        for current_staff in rostered[shifts]:
+            staff_members.append(StaffMember(name=staff, shift=shift_types[shifts], attributes=staff.skillset_map[current_staff]))
+
+    print(staff_members)
 
 
 def assign_category(task_name):
@@ -255,6 +323,8 @@ def assign_category(task_name):
         
     return TaskType.OTHER
 
+    #TODO: hierachy of availability
+
 
 def time_to_str(t):
     # Convert time object to a string in HH:MM format
@@ -275,7 +345,7 @@ def excel_to_json(schedules, json_file_directory):
         task = str(row[0])  # Access the first element of the tuple as the task name
         
         # Extract the study name from the task name if "Schedule" is present
-        current_study = extract_name_from_schedule(task, current_study)
+        current_study = str(row[0]).split()[0]
         
         # Convert times to strings and skip NaN values
         times = [time_to_str(t) for t in row[1:] if pd.notna(t)]
