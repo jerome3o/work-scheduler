@@ -2,7 +2,6 @@ from typing import List, Tuple
 from enum import Enum
 from pydantic import BaseModel, Field
 from datetime import datetime
-from enum import Enum
 
 
 # Staff related models

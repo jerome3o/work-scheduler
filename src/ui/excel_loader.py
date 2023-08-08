@@ -3,8 +3,8 @@ import os
 import json
 import xlwings as xw
 from tkinter import filedialog, ttk, simpledialog
-from datetime import time
-from typing import List
+from datetime import datetime, timedelta
+from typing import List, Dict
 
 import pandas as pd
 import openpyxl
@@ -12,8 +12,8 @@ from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import NamedStyle
 
-from models import TaskType, StaffMember, Task, WorkDay, Shift
-import staff
+from src.models import TaskType, StaffMember, Task, WorkDay, Shift
+from src.staff import SKILLSET_MAP
 
 input_file_paths = []
 input_schedule_days = []
@@ -64,7 +64,7 @@ def open_file_dialog():
 
 def open_roster_dialog():
     input_roster = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx *.xls")])
-    day = simpledialog.askstring("Enter Day", f"Enter the schedule date:")
+    day = simpledialog.askstring("Enter Day", f"Enter the schedule date: e.g. MON 07 AUG")
 
     print(input_roster)
 
@@ -185,15 +185,14 @@ def copy_schedule_days(input_files, output_file_directory):
         #     f.write(work_day.json(indent=4))
         
 
-def get_staff_shifts(roster_path, day):
-    staff = List[StaffMember]
+def get_staff_shifts(roster_path: str, day: str):
 
     shift_ranges = {
-    'morning_short': ['D15:D25'],               #for shifts 0730-1330
-    'morning_long': ['H15:H25', 'L15:L25'],     #for shifts 0700-1500    
-    'morning_late': ['P15:P25'],                #for shifts 0800-1600
-    'afternoon': ['H27:H32', 'L27:L32'],        #for shifts 1430-2230
-    'night': ['H34:H37', 'L34:L37']             #for shifts 2200-0730
+        'morning_short': ['D15:D25'],               #for shifts 0730-1330
+        'morning_long': ['H15:H25', 'L15:L25'],     #for shifts 0700-1500    
+        'morning_late': ['P15:P25'],                #for shifts 0800-1600
+        'afternoon': ['H27:H32', 'L27:L32'],        #for shifts 1430-2230
+        'night': ['H34:H37', 'L34:L37']             #for shifts 2200-0730
     }
 
     # Load the workbook
@@ -218,24 +217,29 @@ def get_staff_shifts(roster_path, day):
 
     for category, data in rostered.items():
         print(f"{category}:", data)
-    
-    get_staff_members(rostered)
 
-def get_staff_members(rostered):
+    current_date = datetime.now()
+    date = datetime.strptime(day, "%a %d %b").replace(year=current_date.year)
+    
+    
+    get_staff_members(rostered, date)
+
+
+def get_staff_members(rostered: Dict[str, List[str]], roster_date: datetime):
 
     shift_types = {
-    'morning_short' : Shift(start_time=time(7, 30), finish_time=time(13, 30)),
-    'morning_long' : Shift(start_time = time(7, 00), end_time=time(15, 00)),
-    'morning_late' : Shift(start_time = time(8, 00), end_time=time(16, 00)),
-    'afternoon' : Shift(start_time = time(14, 30), end_time=time(22, 30)),
-    'night' : Shift(start_time = time(22, 00), end_time=time(7, 30)),
+        'morning_short' : Shift(start_time=roster_date.replace(hour=7, minute=30), finish_time=roster_date.replace(hour=13, minute=30)),
+        'morning_long' : Shift(start_time=roster_date.replace(hour=7, minute=00), finish_time=roster_date.replace(hour=15, minute=00)),
+        'morning_late' : Shift(start_time=roster_date.replace(hour=8, minute=00), finish_time=roster_date.replace(hour=16, minute=0)),
+        'afternoon' : Shift(start_time=roster_date.replace(hour=14, minute=30), finish_time=roster_date.replace(hour=22, minute=30)),
+        'night' : Shift(start_time=roster_date.replace(hour=22, minute=00), finish_time=(roster_date + timedelta(days=1)).replace(hour=7, minute=30)),
     }
 
-    staff_members = List(StaffMember)
+    staff_members = []
 
     for shifts in rostered:
         for current_staff in rostered[shifts]:
-            staff_members.append(StaffMember(name=staff, shift=shift_types[shifts], attributes=staff.SKILLSET_MAP[current_staff]))
+            staff_members.append(StaffMember(name=current_staff, shift=shift_types[shifts], attributes=SKILLSET_MAP[current_staff]))
 
     print(staff_members)
 
