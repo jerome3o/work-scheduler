@@ -3,7 +3,7 @@ import os
 import json
 import xlwings as xw
 from tkinter import filedialog, ttk, simpledialog
-from datetime import datetime, timedelta
+from datetime import time, datetime, timedelta
 from typing import List, Dict
 
 import pandas as pd
@@ -168,7 +168,7 @@ def copy_schedule_days(input_files, output_file_directory):
         excel_to_json(output_file_name, output_file_directory)
 
         # TODO(liv): 
-        #   Generate a list of Staff members for the day (of type StaffMember)
+        #   Generate a list of Staff members for the day (of type StaffMember) - done
         #   Generate a list of tasks for the relevant studies (of type Task)
         #   Put that all into a WorkDay object
         # # Might look something like:
