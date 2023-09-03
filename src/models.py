@@ -32,7 +32,7 @@ class TaskType(Enum):       #KEY WORDS:
     SPUTUM          = "sputum"     #SPUTUM
     PORTACATH       = "portacath"    #PORT,
     PAEDS_PORT      = "paeds_port"    #if STUDY_NAME=MISSION, PORT
-    CYTOTOXIC       = "cytotoxic"    
+    CYTOTOXIC       = "cytotoxic"
     BREEZING        = "breezing"    #REE
     TRIPLICATE      = "triplicate"    #TRIPLICATE --must be same staff
     ANY             = "any"    #ADMIT, WRIST, WRISTBAND, COMPLIANCE, REMIND, ENSURE, RULES, TOUR, WORKBOOK, DISCHARGE, ENCOURAGE, ORIENTATION, RESTRICTIONS
