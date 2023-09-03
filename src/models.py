@@ -53,11 +53,13 @@ class StaffMember(BaseModel):
     name: str
     shift: Shift
     attributes: SkillSet
+    floor: str
 
 
 # Study related models
 class Task(BaseModel):
     study: str
+    floor: str
     patient: str
     time: Union[datetime, str]
     #start_after: datetime

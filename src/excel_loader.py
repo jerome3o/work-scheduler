@@ -1,25 +1,21 @@
 import tkinter as tk
 import os
-import json
 import xlwings as xw
 from tkinter import filedialog, ttk, simpledialog
 from datetime import time, datetime, timedelta
 from typing import List, Dict
 
 import pandas as pd
-import openpyxl
-from openpyxl import Workbook
-from openpyxl.utils.dataframe import dataframe_to_rows
-from openpyxl.styles import NamedStyle
 
 from models import TaskType, StaffMember, Task, WorkDay, Shift
 from staff import SKILLSET_MAP
-from enum import Enum
+
 
 input_file_paths = []
 input_cohort_names = []
 input_schedule_days = []
 staff_members_roster = []
+study_patient_numbers = []
 date = "MON 07 AUG"
 input_roster = ""
 output_file_path = ""
@@ -64,8 +60,8 @@ def open_file_dialog():
     cohort_name = file_name + " " + ask_cohort
     input_cohort_names.append(cohort_name)
 
-    global no_patients
     no_patients = simpledialog.askinteger("Enter Number of Subjects", f"Enter the number of subjects for '{cohort_name}':")
+    study_patient_numbers.append(no_patients)
 
     # Prompt the user to enter the day number using a dialog box
     day = simpledialog.askinteger("Enter Day", f"Enter the day for '{cohort_name}':")
@@ -122,6 +118,12 @@ def create_task_list(input_file_paths):
         patients = []
 
         current_study = input_cohort_names[i]
+        current_floor = ""
+        for key, study_array in study_floors.items():
+            if any(study.strip().lower() in current_study.strip().lower() for study in study_array):
+                current_floor = key
+                break
+
         current_day = input_schedule_days[i]
 
         pt_token = "Day " + str(current_day)
@@ -151,7 +153,7 @@ def create_task_list(input_file_paths):
             if pt_token in str(first_cell) and date_count != 0: #take patients as the 2nd cell onwards, if Day i is read
                 p = 0
                 for cell_value in row[1:]:
-                    if str(cell_value).strip().lower() == 'nurse' or p == no_patients:
+                    if str(cell_value).strip().lower() == 'nurse' or p == study_patient_numbers[i]:
                         break
                     patients.append(cell_value)
                     p = p+1
@@ -178,7 +180,7 @@ def create_task_list(input_file_paths):
             attribute = assign_attribute(task_iter)
             is_triplicate = isTriplicate(task_iter)
             for patient_i, time_i in patient_iter.items():
-                tasks.append(Task(study=current_study, patient=patient_i, time=time_i, required_attributes=attribute, title=task_iter, triplicate=is_triplicate))
+                tasks.append(Task(study=current_study, floor=current_floor, patient=patient_i, time=time_i, required_attributes=attribute, title=task_iter, triplicate=is_triplicate))
 
         i = i+1
 
@@ -296,12 +298,26 @@ def create_workday(task_list):
 
 def get_staff_shifts(roster_path: str, day: str):
 
-    shift_ranges = {
+    shifts = {
         'morning_short': ['D15:D25'],               #for shifts 0730-1330
-        'morning_long': ['H15:H25', 'L15:L25'],     #for shifts 0700-1500    
+        'morning_long': ['H15:H25', 'L15:L25'],     #for shifts 0700-1500
         'morning_late': ['P15:P25'],                #for shifts 0800-1600
         'afternoon': ['H27:H32', 'L27:L32'],        #for shifts 1430-2230
         'night': ['H34:H37', 'L34:L37']             #for shifts 2200-0730
+    }
+
+    staff_floor_ranges = {
+        'outpatients': ['D15:D25'],
+        'level_one': ['H15:H25', 'H27:H32', 'H34:H37'],
+        'ground_floor': ['L15:L25', 'L27:L32', 'L34:L37'],
+        'level_two': ['P15:P25']
+    }
+
+    study_floor_ranges = {
+        'outpatients': ['D4:D11'],
+        'level_one': ['H4:H11'],
+        'level_two': ['L4:L11'],
+        'ground_floor': ['P4:P11']
     }
 
     # Load the workbook
@@ -310,16 +326,40 @@ def get_staff_shifts(roster_path: str, day: str):
     sheet = wb.sheets[day]
     
     rostered = {}
+    staff_floors = {}
+    global study_floors
+    study_floors = {}
     
-    for category, column_ranges in shift_ranges.items():
+    for shift, shift_ranges in shifts.items():
+        staff_shifts = []
+        for shift_range in shift_ranges:
+            shift_column_cells = sheet[shift_range]
+            for shift_cell in shift_column_cells:
+                shift_cell_value = shift_cell.value
+                if shift_cell_value is not None:
+                    staff_shifts.append(shift_cell_value.split()[0])
+        rostered[shift] = staff_shifts
+
+    for floor, floor_ranges in staff_floor_ranges.items():
+        floors = []
+        for floor_range in floor_ranges:
+            staff_floor_column_cells = sheet[floor_range]
+            for staff_floor_cell in staff_floor_column_cells:
+                staff_floor_cell_value = staff_floor_cell.value
+                if staff_floor_cell_value is not None:
+                    floors.append(staff_floor_cell_value.split()[0])
+        staff_floors[floor] = floors
+
+    for category, column_ranges in study_floor_ranges.items():
         data = []
         for column_range in column_ranges:
             column_cells = sheet[column_range]
             for cell in column_cells:
                 cell_value = cell.value
-                if cell_value is not None:  # Skip empty cells
+                if cell_value is not None:
                     data.append(cell_value.split()[0])
-        rostered[category] = data
+        study_floors[category] = data
+
 
     wb.close()
     app.quit()
@@ -327,11 +367,10 @@ def get_staff_shifts(roster_path: str, day: str):
     current_date = datetime.now()
     roster_date = datetime.strptime(day, "%a %d %b").replace(year=current_date.year)
     
-    
-    get_staff_members(rostered, roster_date)
+    get_staff_members(rostered, staff_floors, roster_date)
 
 
-def get_staff_members(rostered: Dict[str, List[str]], roster_date: datetime):
+def get_staff_members(rostered: Dict[str, List[str]], staff_floors: Dict[str, List[str]], roster_date: datetime):
 
     shift_types = {
         'morning_short' : Shift(start_time=roster_date.replace(hour=7, minute=30), finish_time=roster_date.replace(hour=13, minute=30)),
@@ -343,7 +382,8 @@ def get_staff_members(rostered: Dict[str, List[str]], roster_date: datetime):
 
     for shifts in rostered:
         for current_staff in rostered[shifts]:
-            staff_members_roster.append(StaffMember(name=current_staff, shift=shift_types[shifts], attributes=SKILLSET_MAP[current_staff]))
+            current_floor = next((key for key, staff_array in staff_floors.items() if current_staff in staff_array), None)
+            staff_members_roster.append(StaffMember(name=current_staff, shift=shift_types[shifts], attributes=SKILLSET_MAP[current_staff], floor=current_floor))
 
 
 def assign_attribute(task_name):
@@ -436,53 +476,6 @@ def assign_attribute(task_name):
 def time_to_str(t):
     # Convert time object to a string in HH:MM format
     return t.strftime('%H:%M') if isinstance(t, time) else str(t)
-
-
-def excel_to_json(schedules, json_file_directory):
-    # Read the Excel file into a pandas DataFrame
-    df = pd.read_excel(schedules, header=None)
-    
-    # Create a dictionary to store tasks by category
-    data = {}
-
-    current_category = None
-    current_study = "Unknown"
-    
-    for row in df.itertuples(index=False, name=None):
-        task = str(row[0])  # Access the first element of the tuple as the task name
-        
-        # Extract the study name from the task name if "Schedule" is present
-        current_study = str(row[0]).split()[0]
-        
-        # Convert times to strings and skip NaN values
-        times = [time_to_str(t) for t in row[1:] if pd.notna(t)]
-        
-        # Skip adding to data if task is NaN
-        if task == "nan":
-           continue
-
-        current_category = assign_attribute(task).value
-        
-        # Create an instance of the appropriate Enum class based on the category
-        if current_study not in data:
-            data[current_study] = {}
-        
-        if current_category not in data[current_study]:
-            data[current_study][current_category] = []
-        
-        # Append the task and times to the list for the category
-        data[current_study][current_category].append({"task": task, "times": times})
-
-    # Convert Enum keys to strings before writing to JSON
-    json_data = {str(key): value for key, value in data.items()}
-
-    json_file_path = os.path.join(json_file_directory, "JSON_schedules.json")
-
-    # Create the JSON file and write the dictionary into it
-    with open(json_file_path, 'w') as f:
-        json.dump(json_data, f, indent=4)
-
-    print(f"Created JSON file")
 
 
 if __name__ == "__main__":
