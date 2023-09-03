@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from enum import Enum
 from pydantic import BaseModel, Field
 from datetime import datetime
@@ -59,13 +59,16 @@ class StaffMember(BaseModel):
 class Task(BaseModel):
     study: str
     patient: str
-    start_after: datetime
-    finish_before: datetime
-    duration: int
-    blocked_by: List["Task"] = Field(default_factory=list)
+    time: Union[datetime, str]
+    #start_after: datetime
+    #finish_before: datetime
+    #duration: int  I dunno know to figure this out per task?
+    #blocked_by: List["Task"] = Field(default_factory=list)         LATER
     # This is a list because some tasks may require multiple people
-    required_attributes: List[SkillSet]
+    required_attributes: TaskType
+    #required_attributes: List[SkillSet]
     title: str
+    #can this be instantiated with either set time OR start_after/finish_after?
 
 
 class WorkDay(BaseModel):
