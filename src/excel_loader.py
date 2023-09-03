@@ -6,6 +6,8 @@ from datetime import time, datetime, timedelta
 from typing import List, Dict
 
 import pandas as pd
+import openpyxl
+from openpyxl import Workbook
 
 from models import TaskType, StaffMember, Task, WorkDay, Shift
 from staff import SKILLSET_MAP
@@ -195,9 +197,75 @@ def create_workday(task_list):
 
     with open(json_file_path, 'w') as json_file:
         json_file.write(workday.json(indent=4))
+    
+    copy_schedules()
 
 
-"""def copy_schedule_days(input_files, output_file_directory):
+def copy_schedules():
+    # Create a new destination Excel workbook
+    output_file_name = os.path.join(output_file_path, "Daily_Schedules.xlsx")
+    if not os.path.exists(output_file_name):
+        output_wb = Workbook()
+        output_wb.save(output_file_name)
+    else:
+        output_wb = openpyxl.load_workbook(output_file_name, data_only=True)
+    
+    destination_sheet_name = 'Workday ' + date
+    destination_sheet = output_wb.active
+    destination_sheet.title = destination_sheet_name
+
+    end_token = 'Workbook'   
+
+    i=0 
+
+    # Iterate through multiple source Excel files
+    for source_file_path in input_file_paths:
+        source_file = openpyxl.load_workbook(source_file_path)
+        source_sheet = source_file.active
+
+        # Initialize variables to store start and end row indices
+        start_row = None
+        end_row = None
+
+        current_day = input_schedule_days[i]
+        start_token = "Day " + str(current_day)
+
+        found_start = False
+
+        # iterating through rows to find start and end rows
+        for row in source_sheet.iter_rows(min_row=1, max_row=source_sheet.max_row, min_col=2, max_col=2):  # Adjust column index to 2 (second column)
+            cell_value = row[0].value
+            if start_token in str(cell_value):
+                if not found_start:
+                    start_row = row[0].row
+                    found_start = True
+            elif found_start and end_token in cell_value:
+                end_row = row[0].row
+                break
+
+        # Check if start and end rows were found in the source sheet
+        if start_row is not None and end_row is not None:
+            # Copy the section from the source to the destination
+            for row_index in range(start_row, end_row + 1):
+                for col_index, source_cell in enumerate(source_sheet.iter_cols(min_row=row_index, max_row=row_index)):
+                    destination_cell = destination_sheet.cell(row=row_index - start_row + 1, column=col_index + 1)
+                    destination_cell.value = source_cell[0].value
+                    destination_cell.font = openpyxl.styles.Font(size=source_cell[0].font.size)
+                    destination_cell.fill = openpyxl.styles.PatternFill(start_color=source_cell[0].fill.start_color, end_color=source_cell[0].fill.end_color, fill_type=source_cell[0].fill.fill_type)
+                    destination_cell.alignment = openpyxl.styles.Alignment(horizontal=source_cell[0].alignment.horizontal, vertical=source_cell[0].alignment.vertical)
+
+        # Close the source file
+        source_file.close()
+        i=i+1
+    # Save the destination workbook
+    output_wb.save("Daily_Schedules.xlsx")
+
+    # Close the destination workbook
+    output_wb.close()
+
+
+"""
+def copy_schedule_days(input_files, output_file_directory):
     # Create a new workbook for the output if it doesn't exist
     output_file_name = os.path.join(output_file_directory, "Daily_Schedules.xlsx")
     if not os.path.exists(output_file_name):
@@ -275,9 +343,7 @@ def create_workday(task_list):
         i=i+1
 
         print(f"Successfully created Daily_schedules.xslx")
-
-        excel_to_json(output_file_name, output_file_directory)"""
-
+"""
         # TODO(liv): 
         #   Generate a list of Staff members for the day (of type StaffMember) - done
         #   Generate a list of tasks for the relevant studies (of type Task) - DONE
@@ -296,7 +362,7 @@ def create_workday(task_list):
         #     f.write(work_day.json(indent=4))
         
 
-def get_staff_shifts(roster_path: str, day: str):
+def get_staff_shifts(roster_path: str, day: str):       #might need to create second instance of OP staff after OP schedule complete?
 
     shifts = {
         'morning_short': ['D15:D25'],               #for shifts 0730-1330
