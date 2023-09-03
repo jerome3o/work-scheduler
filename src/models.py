@@ -68,6 +68,7 @@ class Task(BaseModel):
     required_attributes: TaskType
     #required_attributes: List[SkillSet]
     title: str
+    triplicate: bool
     #can this be instantiated with either set time OR start_after/finish_after?
 
 

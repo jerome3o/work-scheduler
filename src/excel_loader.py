@@ -64,6 +64,9 @@ def open_file_dialog():
     cohort_name = file_name + " " + ask_cohort
     input_cohort_names.append(cohort_name)
 
+    global no_patients
+    no_patients = simpledialog.askinteger("Enter Number of Subjects", f"Enter the number of subjects for '{cohort_name}':")
+
     # Prompt the user to enter the day number using a dialog box
     day = simpledialog.askinteger("Enter Day", f"Enter the day for '{cohort_name}':")
     input_schedule_days.append(day)
@@ -89,15 +92,19 @@ def output_directory_dialog():
 
 def find_token_row_index(token, df):
     return df[df.apply(lambda row: row.astype(str).str.contains(token, case=False).any(), axis=1)].index
-    
-    #mask = df.iloc[:, 1].apply(lambda x: str(x).lower()).str.contains(token.lower())
-    #return df[mask].index
 
 
 def append_empty_rows(sheet, num_rows):
     for _ in range(num_rows):
         empty_row = [None] * sheet.max_column
         sheet.append(empty_row)
+
+
+def isTriplicate(task_name):
+    if "triplicate" in str(task_name).strip().lower():
+        return True
+    else:
+        return False
 
 
 def create_task_list(input_file_paths):
@@ -142,10 +149,12 @@ def create_task_list(input_file_paths):
                 continue
             
             if pt_token in str(first_cell) and date_count != 0: #take patients as the 2nd cell onwards, if Day i is read
+                p = 0
                 for cell_value in row[1:]:
-                    if str(cell_value).strip().lower() == 'nurse':
+                    if str(cell_value).strip().lower() == 'nurse' or p == no_patients:
                         break
                     patients.append(cell_value)
+                    p = p+1
                 date_count = 0
             else:
                 task_name = first_cell
@@ -155,7 +164,7 @@ def create_task_list(input_file_paths):
                     if patient is not None:
                         if str(time).strip().lower() == 'nan':
                             task_times[patient] = ""
-                            break
+                            continue
                         if isinstance(time, datetime):
                             time = time.time()
                         task_times[patient] = datetime.combine(roster_day, time)
@@ -167,8 +176,9 @@ def create_task_list(input_file_paths):
             
         for task_iter, patient_iter in schedule.items():
             attribute = assign_attribute(task_iter)
+            is_triplicate = isTriplicate(task_iter)
             for patient_i, time_i in patient_iter.items():
-                tasks.append(Task(study=current_study, patient=patient_i, time=time_i, required_attributes=attribute, title=task_iter))
+                tasks.append(Task(study=current_study, patient=patient_i, time=time_i, required_attributes=attribute, title=task_iter, triplicate=is_triplicate))
 
         i = i+1
 
