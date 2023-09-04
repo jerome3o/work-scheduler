@@ -1,18 +1,10 @@
 from typing import List, Tuple, Union
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from datetime import datetime
 
 
 # Staff related models
-
-
-class Attribute(Enum):
-    DOCTOR = "doctor"
-    NURSE = "nurse"
-    TECHNICIAN = "technician"
-    PHLEBOTOMIST = "phlebotomist"
-
 
 class Shift(BaseModel):
     # required breaks can be determined by the duration
