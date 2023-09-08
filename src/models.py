@@ -56,7 +56,8 @@ class Task(BaseModel):
     time: Union[datetime, str]
     #start_after: datetime
     #finish_before: datetime
-    #duration: int  I dunno know to figure this out per task?
+    duration: int
+    strict_staffing: bool   #false if the task is flexible in its staff requirements, true if it is strict
     #blocked_by: List["Task"] = Field(default_factory=list)         LATER
     # This is a list because some tasks may require multiple people
     required_attributes: TaskType
@@ -75,6 +76,13 @@ class WorkDay(BaseModel):
 class Solution(BaseModel):
     allocations: List[Tuple[StaffMember, Task]]
 
+
+#triplicates need to be same person, if they can't do the last one they can't do the first one
+#two RNs needed to dose
+#If no CRTs available for task, assign RN
+#If no one is available in the same floor, assign someone from other floor
+#------> Task type can have a length and a "fit" (how correct the assignment has to be, i.e. phlebotomy is a 1 and meals a 0 because one requires training and the other doesnt)
+#Consider task load
 
 # Other considerations
 # Continuity of tasks per staff member

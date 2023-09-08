@@ -140,6 +140,9 @@ def create_task_list(input_file_paths):
 
         pt_token = "Day " + str(current_day)
 
+        duration = 0
+        fit = 0
+
         df = pd.read_excel(file)
 
         start_index = find_token_row_index(pt_token, df)
@@ -189,10 +192,13 @@ def create_task_list(input_file_paths):
                 schedule[task_name] = task_times
             
         for task_iter, patient_iter in schedule.items():
-            attribute = assign_attribute(task_iter)
+            attribute_list = assign_attribute(task_iter)
+            attribute = attribute_list[0]
+            task_duration = attribute_list[1]
+            task_fit = attribute_list[2]
             is_triplicate = isTriplicate(task_iter)
             for patient_i, time_i in patient_iter.items():
-                tasks.append(Task(study=current_study, floor=current_floor, patient=patient_i, time=time_i, required_attributes=attribute, title=task_iter, triplicate=is_triplicate))
+                tasks.append(Task(study=current_study, floor=current_floor, patient=patient_i, time=time_i, duration=task_duration, strict_staffing=task_fit, required_attributes=attribute, title=task_iter, triplicate=is_triplicate))
 
         i = i+1
     
@@ -526,15 +532,54 @@ def assign_attribute(task_name):
         TaskType.DAY: ["DAY"]
     }
 
+    current_task = TaskType.OTHER
+    duration = 2
+    fit = 0
+
+    criteria = []
+
     for assignment in assign_tasks:
         for keyword in assign_tasks[assignment]:
             if keyword in str.upper(task_name):
-                return assignment
-        
-    return TaskType.OTHER
+                current_task = assignment
 
-    #TODO: hierachy of availability (NURSES TO DO TASKS WHERE CRT UNAVAILABLE)
-    #TODO: check triplicate functionality?
+    if current_task == TaskType.DOCTOR:
+        duration = 10
+        fit = 1
+    elif current_task == TaskType.CRT:
+        duration = 3
+        fit = 0
+    elif current_task == TaskType.ANY:
+        duration = 1
+        fit = 0
+    elif current_task == TaskType.PHLEBOTOMY:
+        duration = 5
+        fit = 1
+    elif current_task == TaskType.CANNULATION:
+        duration = 5
+        fit = 1
+    elif current_task == TaskType.INFUSION:
+        duration = 5
+        fit = 1
+    elif current_task == TaskType.SPIRO:
+        duration = 10
+        fit = 1
+    elif current_task == TaskType.SPUTUM:
+        duration = 10
+        fit = 1
+    elif current_task == TaskType.BREEZING:
+        duration = 5
+        fit = 1
+    elif current_task == TaskType.TRIPLICATE:
+        duration = 1
+        fit = 0
+    elif current_task == TaskType.PHARMACY:
+        duration = 10
+        fit = 1
+    
+    criteria = [current_task, duration, fit]
+        
+    return criteria
 
 
 def time_to_str(t):
