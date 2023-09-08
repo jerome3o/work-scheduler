@@ -5,9 +5,9 @@ _DATA_FILE = "test_data/solver/workday.json"
 
 def main():
     work_day = WorkDay.parse_file(_DATA_FILE)
-    print(work_day)
+    print(work_day.json(indent=4))
 
-5
+
 if __name__ == "__main__":
     import logging
 
