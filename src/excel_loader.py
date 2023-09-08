@@ -1,13 +1,15 @@
 import tkinter as tk
 import os
 import xlwings as xw
+import datetime as dt
 from tkinter import filedialog, ttk, simpledialog
-from datetime import time, datetime, timedelta
+from datetime import time, timedelta, datetime
 from typing import List, Dict
 
 import pandas as pd
 import openpyxl
 from openpyxl import Workbook
+from openpyxl.styles import NamedStyle, Font, Border
 
 from models import TaskType, StaffMember, Task, WorkDay, Shift
 from staff import SKILLSET_MAP
@@ -22,11 +24,19 @@ date = "MON 07 AUG"
 input_roster = ""
 output_file_path = ""
 
+#All subjects need column names (i.e. 1, 2, STBY etc.)
+#All visits need to have Day x in the header
+#All studies must be assigned a floor in the roster, same for staff
+#If any rows in a schedule are not to be included, they should be deleted rather than minimized
+#Tasks need to be clearly defined, i.e. "blood" needs to be included in "safeties"
+#Triplicates need to be specified consecutively, i.e. not only "ECG triplicte 1 min apart" in one row
+
+#TODO: determine task length, time spent in OP & what to do with returning staff
 
 def create_window():
     root = tk.Tk()
     root.title("Study Schedule Selection")
-    root.geometry("500x400")  # Set the initial size of the window (width x height)
+    root.geometry("500x400")  # the initial size of the window (width x height)
 
     file_select_button = tk.Button(root, text="Select Schedule", command=open_file_dialog)
     file_select_button.pack(pady=10)
@@ -185,7 +195,7 @@ def create_task_list(input_file_paths):
                 tasks.append(Task(study=current_study, floor=current_floor, patient=patient_i, time=time_i, required_attributes=attribute, title=task_iter, triplicate=is_triplicate))
 
         i = i+1
-
+    
     create_workday(tasks)
 
 
@@ -216,14 +226,38 @@ def copy_schedules():
 
     end_token = 'Workbook'   
 
-    i=0 
+    i=0
+
+    custom_style = NamedStyle(name='custom_style')
+    custom_style.number_format = 'hh:mm'
+
+    current_row = 1
 
     # Iterate through multiple source Excel files
     for source_file_path in input_file_paths:
-        source_file = openpyxl.load_workbook(source_file_path)
+        source_file = openpyxl.load_workbook(source_file_path, data_only=True)
         source_sheet = source_file.active
 
-        # Initialize variables to store start and end row indices
+        study_name_array = source_file_path.split("/")[-1].split()
+        study_name = study_name_array[0] + " " + study_name_array[1] + " " + study_name_array[2] + " " + study_name_array[3]
+
+        number_patients = study_patient_numbers[i]
+
+        append_study_name = [study_name] + [None] * (destination_sheet.max_column - 1)
+        empty_row = ["   "] + [None] * (destination_sheet.max_column - 1)
+
+        for name_index, value in enumerate(append_study_name, start=1):
+            current_cell = destination_sheet.cell(row=current_row, column=name_index, value=value)
+            current_cell.font = Font(bold=True)
+        
+        current_row +=1
+        
+        for empty_index, value in enumerate(empty_row, start=1):
+            destination_sheet.cell(row=current_row, column=empty_index, value=value)
+            destination_sheet.row_dimensions[current_row].height = 15
+
+        current_row +=1
+
         start_row = None
         end_row = None
 
@@ -239,7 +273,7 @@ def copy_schedules():
                 if not found_start:
                     start_row = row[0].row
                     found_start = True
-            elif found_start and end_token in cell_value:
+            elif found_start and end_token in str(cell_value):
                 end_row = row[0].row
                 break
 
@@ -247,15 +281,58 @@ def copy_schedules():
         if start_row is not None and end_row is not None:
             # Copy the section from the source to the destination
             for row_index in range(start_row, end_row + 1):
-                for col_index, source_cell in enumerate(source_sheet.iter_cols(min_row=row_index, max_row=row_index)):
-                    destination_cell = destination_sheet.cell(row=row_index - start_row + 1, column=col_index + 1)
-                    destination_cell.value = source_cell[0].value
+                for col_index, source_cell in enumerate(source_sheet.iter_cols(min_row=row_index, max_row=row_index, min_col=2, max_col=number_patients + 2)):  # Skip the first column
+                    destination_cell = destination_sheet.cell(row=current_row, column=col_index + 1)
+                    if type(source_cell[0].value) == dt.time:
+                        destination_cell.value = source_cell[0].value
+                        destination_cell.style = custom_style
+                    elif type(source_cell[0].value) == dt.datetime:
+                        destination_cell.value = source_cell[0].value.time()
+                        destination_cell.style = custom_style
+                    else:
+                        destination_cell.value = source_cell[0].value
                     destination_cell.font = openpyxl.styles.Font(size=source_cell[0].font.size)
                     destination_cell.fill = openpyxl.styles.PatternFill(start_color=source_cell[0].fill.start_color, end_color=source_cell[0].fill.end_color, fill_type=source_cell[0].fill.fill_type)
                     destination_cell.alignment = openpyxl.styles.Alignment(horizontal=source_cell[0].alignment.horizontal, vertical=source_cell[0].alignment.vertical)
 
+                    # Check if the source cell has bold font
+                    if source_cell[0].font and source_cell[0].font.bold:
+                        destination_cell.font = Font(bold=True)  # Apply bold font style
+
+                    # Copy cell borders
+                    if source_cell[0].border:
+                        destination_cell.border = Border(
+                            left=source_cell[0].border.left,
+                            right=source_cell[0].border.right,
+                            top=source_cell[0].border.top,
+                            bottom=source_cell[0].border.bottom
+                        )
+
+                current_row += 1
+
+            for col_index in range(1, destination_sheet.max_column + 1):
+                if col_index == 1:
+                    destination_sheet.column_dimensions[openpyxl.utils.get_column_letter(col_index)].width = source_sheet.column_dimensions["B"].width
+                else:
+                    destination_sheet.column_dimensions[openpyxl.utils.get_column_letter(col_index)].width = 8
+
+            # Set row heights in the destination sheet based on whether they contain text or are empty
+            for row_index in range(1, destination_sheet.max_row + 1):
+                row_values = [cell.value for cell in destination_sheet[row_index]]
+                if any(row_values):
+                    destination_sheet.row_dimensions[row_index].height = 15
+                else:
+                    destination_sheet.row_dimensions[row_index].height = 2
+
         # Close the source file
         source_file.close()
+
+        for _ in range(4):
+            for index, value in enumerate(empty_row, start=1):
+                destination_sheet.cell(row=current_row, column=index, value=value)
+                destination_sheet.row_dimensions[current_row].height = 15
+            current_row +=1
+
         i=i+1
     # Save the destination workbook
     output_wb.save("Daily_Schedules.xlsx")
@@ -264,86 +341,6 @@ def copy_schedules():
     output_wb.close()
 
 
-"""
-def copy_schedule_days(input_files, output_file_directory):
-    # Create a new workbook for the output if it doesn't exist
-    output_file_name = os.path.join(output_file_directory, "Daily_Schedules.xlsx")
-    if not os.path.exists(output_file_name):
-        output_wb = Workbook()
-        output_wb.save(output_file_name)
-    else:
-        output_wb = openpyxl.load_workbook(output_file_name, values_only=True)
-    
-    i = 0
-
-    for input_file in input_files:
-
-        file_name = input_file.split("/")[-1]
-
-        study_name = file_name.split()[0]
-
-        df = pd.read_excel(input_file)
-
-        start_token = "Day " + str(input_schedule_days[i])
-        end_token = "Workbook"
-
-        start_index = find_token_row_index(start_token, df)
-        end_index = find_token_row_index(end_token, df)
-
-        if not start_index.empty and not end_index.empty:
-            start_index = start_index[0]
-            
-            # Find the first occurrence of the ending token after the start token
-            end_index = end_index[end_index > start_index][0]
-
-            # Create a DataFrame for the study name row
-            name_row = [[study_name] * len(df.columns)]
-            name_row_df = pd.DataFrame(name_row, columns=df.columns)
-
-            # Extract the section of data between the start token and the end token
-            selected_data = df.loc[start_index : end_index, df.columns != df.columns[0]]  # Exclude the first column from being copied
-
-            # Combine the name row DataFrame with the selected_data DataFrame
-            named_data = pd.concat([name_row_df, selected_data], ignore_index=True)
-
-            # Get the selected sheet to copy data
-            sheet = output_wb.active
-
-            # Append the new data to the end of the sheet
-            for row in dataframe_to_rows(selected_data, index=False, header=False):
-                sheet.append(row)
-
-            # Define a custom style for datetime values
-            time_style = NamedStyle(name="time_style", number_format="HH:MM")
-
-            # Formatting date time
-            for row in sheet.iter_rows(min_row=sheet.max_row - len(selected_data) + 1, max_row=sheet.max_row):
-                for cell in row:
-                    source_cell = df.iloc[cell.row - sheet.max_row + len(selected_data) - 1, cell.column - 1]
-
-                     # Check if the value is a datetime object and apply the custom style
-                    if isinstance(source_cell, pd.Timestamp):
-                        cell.style = time_style
-                    
-                    #preserve the row height
-                    sheet.row_dimensions[cell.row].height = sheet.row_dimensions[cell.row - sheet.max_row + len(selected_data)].height
-
-            # Preserve column width
-            for column_cells in sheet.columns:
-                length = max(len(str(cell.value)) for cell in column_cells)
-                sheet.column_dimensions[column_cells[0].column_letter].width = length + 2  # Additional padding
-
-            output_wb.save(output_file_name)
-
-        else:
-            print("Day not found in study schedule")
-        
-        append_empty_rows(sheet, 4)
-
-        i=i+1
-
-        print(f"Successfully created Daily_schedules.xslx")
-"""
         # TODO(liv): 
         #   Generate a list of Staff members for the day (of type StaffMember) - done
         #   Generate a list of tasks for the relevant studies (of type Task) - DONE
@@ -450,7 +447,8 @@ def get_staff_members(rostered: Dict[str, List[str]], staff_floors: Dict[str, Li
         for current_staff in rostered[shifts]:
             current_floor = next((key for key, staff_array in staff_floors.items() if current_staff in staff_array), None)
             staff_members_roster.append(StaffMember(name=current_staff, shift=shift_types[shifts], attributes=SKILLSET_MAP[current_staff], floor=current_floor))
-
+    
+    print(f"Roster complete")
 
 def assign_attribute(task_name):
     # Enumerate task names based on keywords
