@@ -37,3 +37,20 @@ Info on worker model also [here](src/models.py).
 * Triplicates can be converted into a single task with a duration of 3x the original
 * Tasks that require multiple workers can be converted into multiple tasks with the same duration and skillset requirements
 * Potential solution for breaks: we add them as tasks.
+
+
+## Rough plan
+
+Construct a matrix of variables for workers and tasks, where each cell is a binary variable indicating whether a worker is assigned to a task.
+
+Then we can add constraints to the matrix to enforce the constraints above.
+
+Other vectors needed for:
+* Tasks
+  * Duration
+  * Skillset
+  * Start time
+* Workers
+  * Skillset
+  * Start time
+  * End time
