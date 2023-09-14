@@ -53,6 +53,9 @@ class Task(BaseModel):
     study: str
     floor: str
     patient: str
+    # time can be string, this is actually indicates it's none
+    # TODO(j.swannack): make this only a datetime, but allow it to be None.
+    #   It was originally str to make it easier to put into the results excel
     time: Union[datetime, str]
     #start_after: datetime
     #finish_before: datetime
