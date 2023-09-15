@@ -7,6 +7,8 @@ from solver.helpers import (
     get_task_finish_time_vector,
     get_worker_start_time_vector,
     get_worker_finish_time_vector,
+    get_task_skillset_matrix,
+    get_worker_skillset_matrix,
 )
 
 
@@ -28,12 +30,17 @@ def build_matrices(work_day: WorkDay):
     worker_start_vector = get_worker_start_time_vector(work_day)
     worker_end_vector = get_worker_finish_time_vector(work_day)
 
+    worker_skillset_matrix = get_worker_skillset_matrix(work_day)
+    task_skillset_matrix = get_task_skillset_matrix(work_day)
+
     # print them all
     print(
         f"task_start_vector: {task_start_vector}\n"
         f"task_duration_vector: {task_duration_vector}\n"
         f"worker_start_vector: {worker_start_vector}\n"
         f"worker_end_vector: {worker_end_vector}\n"
+        f"worker_skillset_matrix: {worker_skillset_matrix}\n"
+        f"task_skillset_matrix: {task_skillset_matrix}\n"
     )
 
     return (
