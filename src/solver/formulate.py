@@ -9,36 +9,24 @@ from solver.helpers import (
     get_worker_end_time_vector,
 )
 
-_DATA_FILE = "test_data/solver/workday.json"
 
-
-def load_workday(file: Union[str, Path]) -> WorkDay:
+def load_work_day(file: Union[str, Path]) -> WorkDay:
     return WorkDay.parse_file(file)
 
 
 def _remove_tasks_with_no_time(workday: WorkDay) -> WorkDay:
     # This is a work around while we still have tasks with no time
     return WorkDay(
-        tasks=[
-            task
-            for task in workday.tasks
-            if task.time is not None
-        ],
+        tasks=[task for task in workday.tasks if task.time is not ''],
         staff_members=workday.staff_members,
     )
 
 
-def main():
-    # todo define relative day somewhere in the workday
-
-    workday = load_workday(_DATA_FILE)
-
-    workday = _remove_tasks_with_no_time(workday)
-
-    task_start_vector = get_task_start_time_vector(workday)
-    task_duration_vector = get_task_duration_vector(workday)
-    worker_start_vector = get_worker_start_time_vector(workday)
-    worker_end_vector = get_worker_end_time_vector(workday)
+def build_matrices(work_day: WorkDay):
+    task_start_vector = get_task_start_time_vector(work_day)
+    task_duration_vector = get_task_duration_vector(work_day)
+    worker_start_vector = get_worker_start_time_vector(work_day)
+    worker_end_vector = get_worker_end_time_vector(work_day)
 
     # print them all
     print(
@@ -47,6 +35,28 @@ def main():
         f"worker_start_vector: {worker_start_vector}\n"
         f"worker_end_vector: {worker_end_vector}\n"
     )
+
+    return (
+        task_start_vector,
+        task_duration_vector,
+        worker_start_vector,
+        worker_end_vector,
+    )
+
+
+def main():
+    # todo define relative day somewhere in the workday
+
+    data_files = [
+        "test_data/solver/workday_example_1.json",
+        "test_data/solver/workday_example_2.json",
+        "test_data/solver/workday_example_3.json",
+    ]
+
+    for data_file in data_files:
+        work_day = load_work_day(data_file)
+        work_day = _remove_tasks_with_no_time(work_day)
+        build_matrices(work_day)
 
 
 if __name__ == "__main__":

@@ -54,7 +54,7 @@ def get_worker_end_time_vector(
 ) -> list:
     return [
         _get_minutes_from_start_of_relative_date(
-            staff_member.shift.end_time,
+            staff_member.shift.finish_time,
             relative_date=relative_date,
         )
         for staff_member in work_day.staff_members
