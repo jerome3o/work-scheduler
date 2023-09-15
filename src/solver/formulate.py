@@ -4,9 +4,9 @@ from typing import Union
 from models import WorkDay
 from solver.helpers import (
     get_task_start_time_vector,
-    get_task_duration_vector,
+    get_task_finish_time_vector,
     get_worker_start_time_vector,
-    get_worker_end_time_vector,
+    get_worker_finish_time_vector,
 )
 
 
@@ -24,9 +24,9 @@ def _remove_tasks_with_no_time(workday: WorkDay) -> WorkDay:
 
 def build_matrices(work_day: WorkDay):
     task_start_vector = get_task_start_time_vector(work_day)
-    task_duration_vector = get_task_duration_vector(work_day)
+    task_duration_vector = get_task_finish_time_vector(work_day)
     worker_start_vector = get_worker_start_time_vector(work_day)
-    worker_end_vector = get_worker_end_time_vector(work_day)
+    worker_end_vector = get_worker_finish_time_vector(work_day)
 
     # print them all
     print(
