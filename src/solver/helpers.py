@@ -77,6 +77,9 @@ def get_task_skillset_matrix(work_day: WorkDay) -> list:
     # This will be a one-hot encoding of the task's required skillset
     # With rows/cols being tasks/skills
     return [
-        [task_type in task.required_attributes for task_type in TaskType]
+        [task_type == task.required_attributes for task_type in list(TaskType)]
+
+        # Change to this when/if required_attributes becomes a list
+        # [task_type in task.required_attributes for task_type in list(TaskType)]
         for task in work_day.tasks
     ]

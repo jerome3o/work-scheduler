@@ -54,7 +54,7 @@ class Task(BaseModel):
     floor: str
     patient: str
     # time can be string, this is actually indicates it's none
-    # TODO(j.swannack): make this only a datetime, but allow it to be None.
+    # TODO(o.kyle): make this only a datetime, and ignore tasks with no time
     #   It was originally str to make it easier to put into the results excel
     time: Union[datetime, str]
     #start_after: datetime
@@ -63,6 +63,7 @@ class Task(BaseModel):
     strict_staffing: bool   #false if the task is flexible in its staff requirements, true if it is strict
     #blocked_by: List["Task"] = Field(default_factory=list)         LATER
     # This is a list because some tasks may require multiple people
+    # TODO(o.kyle): Either change this to a list of SkillSets, or decide it will remain a single SkillSet
     required_attributes: TaskType
     #required_attributes: List[SkillSet]
     title: str
