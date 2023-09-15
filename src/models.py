@@ -74,8 +74,11 @@ class WorkDay(BaseModel):
     tasks: List[Task]
     staff_members: List[StaffMember]
 
-    # TODO(j.swannack): discuss this with liv
-    # relative_day: datetime
+    # TODO(o.kyle): add this here and implement in excel parser
+    #   Ideally it should be the start of the day we're interested in,
+    #   but it can be any time really. I will use it to count minutes from for all time
+    #   values in the solver (i.e. 9am is 540 minutes from the start of the day)
+    # relative_to: datetime
 
 
 # Solution related models
