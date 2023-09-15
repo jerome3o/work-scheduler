@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.models import WorkDay
+from src.models import WorkDay, TaskType
 
 
 def _get_minutes_from_start_of_relative_date(
@@ -32,30 +32,54 @@ def get_task_start_time_vector(
 
 
 def get_task_duration_vector(work_day: WorkDay) -> list:
+    return [task.duration for task in work_day.tasks]
+
+
+def get_worker_start_time_vector(
+    work_day: WorkDay,
+    relative_date: datetime = None,
+) -> list:
     return [
-        task.duration
-        for task in work_day.tasks
+        _get_minutes_from_start_of_relative_date(
+            staff_member.shift.start_time,
+            relative_date=relative_date,
+        )
+        for staff_member in work_day.staff_members
     ]
 
 
-def get_worker_start_time_vector(work_day: WorkDay) -> list:
-    # TODO(j.swannack): implement
-    pass
-
-
-def get_worker_end_time_vector(work_day: WorkDay) -> list:
-    # TODO(j.swannack): implement
-    pass
+def get_worker_end_time_vector(
+    work_day: WorkDay,
+    relative_date: datetime = None,
+) -> list:
+    return [
+        _get_minutes_from_start_of_relative_date(
+            staff_member.shift.end_time,
+            relative_date=relative_date,
+        )
+        for staff_member in work_day.staff_members
+    ]
 
 
 def get_worker_skillset_matrix(work_day: WorkDay) -> list:
-    # TODO(j.swannack): implement
     # This will be a one-hot encoding of the worker's skillset
     # With rows/cols being workers/skills
-    pass
+    return [
+        [
+            task_type in staff_member.attributes
+            for task_type in TaskType
+        ]
+        for staff_member in work_day.staff_members
+    ]
 
 
 def get_task_skillset_matrix(work_day: WorkDay) -> list:
     # This will be a one-hot encoding of the task's required skillset
     # With rows/cols being tasks/skills
-    pass
+    return [
+        [
+            task_type in task.required_attributes
+            for task_type in TaskType
+        ]
+        for task in work_day.tasks
+    ]
