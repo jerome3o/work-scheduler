@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.models import WorkDay, TaskType
+from models import WorkDay, TaskType
 
 
 def _get_minutes_from_start_of_relative_date(

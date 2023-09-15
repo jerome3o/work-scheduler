@@ -74,6 +74,9 @@ class WorkDay(BaseModel):
     tasks: List[Task]
     staff_members: List[StaffMember]
 
+    # TODO(j.swannack): discuss this with liv
+    # relative_day: datetime
+
 
 # Solution related models
 class Solution(BaseModel):
