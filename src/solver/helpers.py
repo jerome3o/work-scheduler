@@ -18,13 +18,24 @@ def _get_minutes_from_start_of_relative_date(
     return (time - relative_date).total_seconds() // 60
 
 
-def get_task_start_time_vector(work_day: WorkDay) -> list:
-    return [task.time for task in work_day.tasks]
+def get_task_start_time_vector(
+    work_day: WorkDay,
+    relative_date: datetime = None,
+) -> list:
+    return [
+        _get_minutes_from_start_of_relative_date(
+            task.time,
+            relative_date=relative_date,
+        )
+        for task in work_day.tasks
+    ]
 
 
 def get_task_duration_vector(work_day: WorkDay) -> list:
-    # TODO(j.swannack): implement
-    pass
+    return [
+        task.duration
+        for task in work_day.tasks
+    ]
 
 
 def get_worker_start_time_vector(work_day: WorkDay) -> list:
