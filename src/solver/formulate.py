@@ -70,6 +70,10 @@ def build_and_solve(
 
     # Constraints
 
+    # All tasks must be assigned
+    for i in range(n_tasks):
+        model += mip.xsum(task_worker_matrix[i]) == 1
+
     # Workers can only work on one task at a time
     for i in range(n_workers):
         model += mip.xsum(worker_task_matrix[i]) <= 1
