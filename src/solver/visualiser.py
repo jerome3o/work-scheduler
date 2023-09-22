@@ -13,16 +13,9 @@ def build_worker_task_count_plot(
     if ax is None:
         _, ax = plt.subplots()
 
-    latest_task_finish = max(model_parameters.task_finish_vector)
-    earliest_task_start = min(model_parameters.task_start_vector)
+    model_parameters.get_time_range()
 
-    latest_worker_finish = max(model_parameters.worker_finish_vector)
-    earliest_worker_start = min(model_parameters.worker_start_vector)
-
-    earliest_minute = min(earliest_task_start, earliest_worker_start)
-    latest_minute = max(latest_task_finish, latest_worker_finish)
-
-    x = range(int(earliest_minute), int(latest_minute))
+    x = range(*model_parameters.get_time_range())
 
     task_count = [
         sum(
