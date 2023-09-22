@@ -38,8 +38,20 @@ def build_and_solve(
         model += mip.xsum(task_worker_matrix[i]) == 1
 
     # Workers can only work on one task at a time
+    earliest_minute, latest_minute = model_parameters.get_time_range()
     for i in range(n_workers):
-        model += mip.xsum(worker_task_matrix[i]) <= 1
+        for minute in range(earliest_minute, latest_minute):
+            model += (
+                mip.xsum(
+                    [
+                        worker_task_matrix[i][j]
+                        for j in range(n_tasks)
+                        if model_parameters.task_start_vector[j] <= minute
+                        and model_parameters.task_finish_vector[j] >= minute
+                    ]
+                )
+                <= 1
+            )
 
     # Tasks can only have one worker assigned to them
     for i in range(n_tasks):
@@ -114,6 +126,8 @@ def main():
         solution = solve(work_day)
         output_file = Path(data_file).with_suffix(".out.json")
         Path(output_file).write_text(solution.json(indent=2))
+
+        break
 
 
 if __name__ == "__main__":
