@@ -82,9 +82,15 @@ class WorkDay(BaseModel):
     # relative_to: datetime
 
 
+class InfeasibleTask(BaseModel):
+    reason: str
+    task: Task
+
+
 # Solution related models
 class Solution(BaseModel):
     allocations: List[Tuple[StaffMember, Task]]
+    infeasible_tasks: List[InfeasibleTask]
 
 
 #triplicates need to be same person, if they can't do the last one they can't do the first one

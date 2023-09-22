@@ -1,18 +1,22 @@
 from itertools import product
+from typing import List, Tuple
+import logging
 
 from pathlib import Path
 
 import mip
 
-from models import WorkDay, Solution
-from solver.helpers import build_matrices, remove_tasks_with_no_time, load_work_day
+from models import WorkDay, Solution, Task, StaffMember
+from solver.helpers import build_matrices, prepare_work_day, load_work_day
 from solver.model_parameters import ModelParameters
+
+_logger = logging.getLogger(__name__)
 
 
 def build_and_solve(
     work_day: WorkDay,
     model_parameters: ModelParameters,
-) -> mip.Model:
+) -> List[Tuple[StaffMember, Task]]:
     model = mip.Model("work-scheduler")
 
     n_workers = len(work_day.staff_members)
@@ -83,12 +87,17 @@ def build_and_solve(
             if worker_task_matrix[i][j].x >= 0.99:
                 allocations.append((work_day.staff_members[i], work_day.tasks[j]))
 
-    return Solution(allocations=allocations)
+    return allocations
 
 
 def solve(work_day: WorkDay) -> Solution:
+    work_day, infeasible_tasks = prepare_work_day(work_day)
     model_parameters = build_matrices(work_day)
-    return build_and_solve(work_day, model_parameters)
+    allocations = build_and_solve(work_day, model_parameters)
+    return Solution(
+        allocations=allocations,
+        infeasible_tasks=infeasible_tasks,
+    )
 
 
 def main():
@@ -102,7 +111,6 @@ def main():
 
     for data_file in data_files:
         work_day = load_work_day(data_file)
-        work_day = remove_tasks_with_no_time(work_day)
         solution = solve(work_day)
         output_file = Path(data_file).with_suffix(".out.json")
         Path(output_file).write_text(solution.json(indent=2))
