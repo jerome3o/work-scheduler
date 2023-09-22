@@ -6,7 +6,7 @@ import mip
 
 from models import WorkDay, Solution
 from solver.helpers import build_matrices, remove_tasks_with_no_time, load_work_day
-from solver.models import ModelParameters
+from solver.model_parameters import ModelParameters
 
 
 def build_and_solve(

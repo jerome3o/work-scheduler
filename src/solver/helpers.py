@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 
 from models import WorkDay, TaskType
-from solver.models import ModelParameters
+from solver.model_parameters import ModelParameters
 
 
 def _get_minutes_from_start_of_relative_date(
