@@ -1,8 +1,7 @@
 from itertools import product
 
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Union, List
+from typing import Union
 
 import mip
 
@@ -15,16 +14,7 @@ from solver.helpers import (
     get_task_skillset_matrix,
     get_worker_skillset_matrix,
 )
-
-
-@dataclass
-class ModelParameters:
-    task_start_vector: List[int]
-    task_finish_vector: List[int]
-    task_skillset_matrix: List[int]
-    worker_start_vector: List[int]
-    worker_finish_vector: List[int]
-    worker_skillset_matrix: List[int]
+from solver.models import ModelParameters
 
 
 def load_work_day(file: Union[str, Path]) -> WorkDay:
