@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 from models import WorkDay
-from solver.helpers import build_matrices, remove_tasks_with_no_time, load_work_day
+from solver.helpers import build_matrices, prepare_work_day, load_work_day
 from solver.model_parameters import ModelParameters
 
 
@@ -47,7 +47,7 @@ def main():
 
     for data_file in data_files:
         work_day = load_work_day(data_file)
-        work_day = remove_tasks_with_no_time(work_day)
+        work_day, _ = prepare_work_day(work_day)
         model_parameters = build_matrices(work_day)
         visualise_model_parameters(model_parameters)
 

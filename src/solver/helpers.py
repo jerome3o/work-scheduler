@@ -9,29 +9,41 @@ from solver.model_parameters import ModelParameters
 _logger = logging.getLogger(__name__)
 
 
+def _get_day_start(time: datetime) -> datetime:
+    return datetime(
+        year=time.year,
+        month=time.month,
+        day=time.day,
+    )
+
+
 def _get_minutes_from_start_of_relative_date(
     time: datetime,
-    relative_date: datetime = None,
+    relative_date: datetime,
 ) -> int:
-    if relative_date is None:
-        # get the start of the day
-        relative_date = datetime(
-            year=time.year,
-            month=time.month,
-            day=time.day,
-        )
-
     return (time - relative_date).total_seconds() // 60
+
+
+def ensure_relative_time(work_day: WorkDay) -> WorkDay:
+    if work_day.relative_to is not None:
+        return work_day
+
+    relative_date = _get_day_start(work_day.tasks[0].time)
+
+    return WorkDay(
+        tasks=work_day.tasks,
+        staff_members=work_day.staff_members,
+        relative_to=relative_date,
+    )
 
 
 def get_task_start_time_vector(
     work_day: WorkDay,
-    relative_date: datetime = None,
 ) -> list:
     return [
         _get_minutes_from_start_of_relative_date(
             task.time,
-            relative_date=relative_date,
+            relative_date=work_day.relative_to,
         )
         for task in work_day.tasks
     ]
@@ -39,19 +51,21 @@ def get_task_start_time_vector(
 
 def get_task_finish_time_vector(work_day: WorkDay) -> list:
     return [
-        _get_minutes_from_start_of_relative_date(task.time) + task.duration
+        _get_minutes_from_start_of_relative_date(
+            task.time, relative_date=work_day.relative_to
+        )
+        + task.duration
         for task in work_day.tasks
     ]
 
 
 def get_worker_start_time_vector(
     work_day: WorkDay,
-    relative_date: datetime = None,
 ) -> list:
     return [
         _get_minutes_from_start_of_relative_date(
             staff_member.shift.start_time,
-            relative_date=relative_date,
+            relative_date=work_day.relative_to,
         )
         for staff_member in work_day.staff_members
     ]
@@ -59,12 +73,11 @@ def get_worker_start_time_vector(
 
 def get_worker_finish_time_vector(
     work_day: WorkDay,
-    relative_date: datetime = None,
 ) -> list:
     return [
         _get_minutes_from_start_of_relative_date(
             staff_member.shift.finish_time,
-            relative_date=relative_date,
+            relative_date=work_day.relative_to,
         )
         for staff_member in work_day.staff_members
     ]
@@ -118,6 +131,7 @@ def remove_tasks_with_no_time(workday: WorkDay) -> Tuple[WorkDay, List[Infeasibl
         WorkDay(
             tasks=tasks_with_time,
             staff_members=workday.staff_members,
+            relative_to=workday.relative_to,
         ),
         infeasible_tasks,
     )
@@ -131,23 +145,35 @@ def sort_tasks_and_workers(workday: WorkDay) -> WorkDay:
             workday.staff_members,
             key=lambda staff_member: staff_member.shift.start_time,
         ),
+        relative_to=workday.relative_to,
     )
 
 
-def remove_infeasible_tasks(workday: WorkDay) -> Tuple[WorkDay, List[InfeasibleTask]]:
+def remove_infeasible_tasks(work_day: WorkDay) -> Tuple[WorkDay, List[InfeasibleTask]]:
     # This is a work around while we still have tasks with no time
-    last_shift_finish = max(
-        [staff_member.shift.finish_time for staff_member in workday.staff_members]
+    last_shift_finish = _get_minutes_from_start_of_relative_date(
+        max(
+            [staff_member.shift.finish_time for staff_member in work_day.staff_members]
+        ),
+        relative_date=work_day.relative_to,
     )
-    first_shift_start = min(
-        [staff_member.shift.start_time for staff_member in workday.staff_members]
+    first_shift_start = _get_minutes_from_start_of_relative_date(
+        min([staff_member.shift.start_time for staff_member in work_day.staff_members]),
+        relative_date=work_day.relative_to,
     )
 
     feasible_tasks = [
         task
-        for task in workday.tasks
-        if task.time >= first_shift_start
-        and task.time + task.duration <= last_shift_finish
+        for task in work_day.tasks
+        if _get_minutes_from_start_of_relative_date(
+            task.time, relative_date=work_day.relative_to
+        )
+        >= first_shift_start
+        and _get_minutes_from_start_of_relative_date(
+            task.time, relative_date=work_day.relative_to
+        )
+        + task.duration
+        <= last_shift_finish
     ]
 
     infeasible_tasks = [
@@ -155,22 +181,24 @@ def remove_infeasible_tasks(workday: WorkDay) -> Tuple[WorkDay, List[InfeasibleT
             task=task,
             reason="No staff available during this time",
         )
-        for task in workday.tasks
+        for task in work_day.tasks
         if task not in feasible_tasks
     ]
 
     return (
         WorkDay(
             tasks=feasible_tasks,
-            staff_members=workday.staff_members,
+            staff_members=work_day.staff_members,
+            relative_to=work_day.relative_to,
         ),
         infeasible_tasks,
     )
 
 
-def prepare_work_day(workday: WorkDay) -> Tuple[WorkDay, List[InfeasibleTask]]:
-    workday, tasks_with_no_time = remove_tasks_with_no_time(workday)
-    workday = sort_tasks_and_workers(workday)
-    workday, infeasible_tasks = remove_infeasible_tasks(workday)
+def prepare_work_day(work_day: WorkDay) -> Tuple[WorkDay, List[InfeasibleTask]]:
+    work_day, tasks_with_no_time = remove_tasks_with_no_time(work_day)
+    work_day = sort_tasks_and_workers(work_day)
+    work_day = ensure_relative_time(work_day)
+    work_day, infeasible_tasks = remove_infeasible_tasks(work_day)
     _logger.warning(f"Removed {len(infeasible_tasks)} infeasible tasks")
-    return workday, infeasible_tasks + tasks_with_no_time
+    return work_day, infeasible_tasks + tasks_with_no_time

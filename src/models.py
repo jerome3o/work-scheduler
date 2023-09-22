@@ -79,7 +79,7 @@ class WorkDay(BaseModel):
     #   Ideally it should be the start of the day we're interested in,
     #   but it can be any time really. I will use it to count minutes from for all time
     #   values in the solver (i.e. 9am is 540 minutes from the start of the day)
-    # relative_to: datetime
+    relative_to: datetime = None
 
 
 class InfeasibleTask(BaseModel):
