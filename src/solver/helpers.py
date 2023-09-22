@@ -195,10 +195,21 @@ def remove_infeasible_tasks(work_day: WorkDay) -> Tuple[WorkDay, List[Infeasible
     )
 
 
-def prepare_work_day(work_day: WorkDay) -> Tuple[WorkDay, List[InfeasibleTask]]:
+def prepare_work_day(
+    work_day: WorkDay,
+    remove_unstaffed_tasks: bool = True,
+) -> Tuple[WorkDay, List[InfeasibleTask]]:
+    infeasible_tasks = []
+
     work_day, tasks_with_no_time = remove_tasks_with_no_time(work_day)
+    infeasible_tasks.extend(tasks_with_no_time)
+
     work_day = sort_tasks_and_workers(work_day)
     work_day = ensure_relative_time(work_day)
-    work_day, infeasible_tasks = remove_infeasible_tasks(work_day)
+
+    if not remove_unstaffed_tasks:
+        work_day, unstaffed_tasks = remove_infeasible_tasks(work_day)
+        infeasible_tasks.extend(unstaffed_tasks)
+
     _logger.warning(f"Removed {len(infeasible_tasks)} infeasible tasks")
-    return work_day, infeasible_tasks + tasks_with_no_time
+    return work_day, infeasible_tasks
