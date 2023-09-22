@@ -6,14 +6,7 @@ from typing import Union
 import mip
 
 from models import WorkDay, Solution
-from solver.helpers import (
-    get_task_start_time_vector,
-    get_task_finish_time_vector,
-    get_worker_start_time_vector,
-    get_worker_finish_time_vector,
-    get_task_skillset_matrix,
-    get_worker_skillset_matrix,
-)
+from solver.helpers import build_matrices
 from solver.models import ModelParameters
 
 
@@ -26,17 +19,6 @@ def _remove_tasks_with_no_time(workday: WorkDay) -> WorkDay:
     return WorkDay(
         tasks=[task for task in workday.tasks if task.time is not ""],
         staff_members=workday.staff_members,
-    )
-
-
-def build_matrices(work_day: WorkDay) -> ModelParameters:
-    return ModelParameters(
-        task_start_vector=get_task_start_time_vector(work_day),
-        task_finish_vector=get_task_finish_time_vector(work_day),
-        worker_start_vector=get_worker_start_time_vector(work_day),
-        worker_finish_vector=get_worker_finish_time_vector(work_day),
-        worker_skillset_matrix=get_worker_skillset_matrix(work_day),
-        task_skillset_matrix=get_task_skillset_matrix(work_day),
     )
 
 

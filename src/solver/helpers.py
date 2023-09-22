@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from models import WorkDay, TaskType
+from solver.models import ModelParameters
 
 
 def _get_minutes_from_start_of_relative_date(
@@ -83,3 +84,14 @@ def get_task_skillset_matrix(work_day: WorkDay) -> list:
         # [task_type in task.required_attributes for task_type in list(TaskType)]
         for task in work_day.tasks
     ]
+
+
+def build_matrices(work_day: WorkDay) -> ModelParameters:
+    return ModelParameters(
+        task_start_vector=get_task_start_time_vector(work_day),
+        task_finish_vector=get_task_finish_time_vector(work_day),
+        worker_start_vector=get_worker_start_time_vector(work_day),
+        worker_finish_vector=get_worker_finish_time_vector(work_day),
+        worker_skillset_matrix=get_worker_skillset_matrix(work_day),
+        task_skillset_matrix=get_task_skillset_matrix(work_day),
+    )
