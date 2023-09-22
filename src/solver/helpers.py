@@ -207,7 +207,7 @@ def prepare_work_day(
     work_day = sort_tasks_and_workers(work_day)
     work_day = ensure_relative_time(work_day)
 
-    if not remove_unstaffed_tasks:
+    if remove_unstaffed_tasks:
         work_day, unstaffed_tasks = remove_infeasible_tasks(work_day)
         infeasible_tasks.extend(unstaffed_tasks)
 
