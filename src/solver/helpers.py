@@ -1,4 +1,6 @@
+from typing import Union
 from datetime import datetime
+from pathlib import Path
 
 from models import WorkDay, TaskType
 from solver.models import ModelParameters
@@ -94,4 +96,15 @@ def build_matrices(work_day: WorkDay) -> ModelParameters:
         worker_finish_vector=get_worker_finish_time_vector(work_day),
         worker_skillset_matrix=get_worker_skillset_matrix(work_day),
         task_skillset_matrix=get_task_skillset_matrix(work_day),
+    )
+
+def load_work_day(file: Union[str, Path]) -> WorkDay:
+    return WorkDay.parse_file(file)
+
+
+def remove_tasks_with_no_time(workday: WorkDay) -> WorkDay:
+    # This is a work around while we still have tasks with no time
+    return WorkDay(
+        tasks=[task for task in workday.tasks if task.time is not ""],
+        staff_members=workday.staff_members,
     )

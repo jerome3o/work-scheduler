@@ -1,25 +1,12 @@
 from itertools import product
 
 from pathlib import Path
-from typing import Union
 
 import mip
 
 from models import WorkDay, Solution
-from solver.helpers import build_matrices
+from solver.helpers import build_matrices, remove_tasks_with_no_time, load_work_day
 from solver.models import ModelParameters
-
-
-def load_work_day(file: Union[str, Path]) -> WorkDay:
-    return WorkDay.parse_file(file)
-
-
-def _remove_tasks_with_no_time(workday: WorkDay) -> WorkDay:
-    # This is a work around while we still have tasks with no time
-    return WorkDay(
-        tasks=[task for task in workday.tasks if task.time is not ""],
-        staff_members=workday.staff_members,
-    )
 
 
 def build_and_solve(
@@ -115,7 +102,7 @@ def main():
 
     for data_file in data_files:
         work_day = load_work_day(data_file)
-        work_day = _remove_tasks_with_no_time(work_day)
+        work_day = remove_tasks_with_no_time(work_day)
         solution = solve(work_day)
         output_file = Path(data_file).with_suffix(".out.json")
         Path(output_file).write_text(solution.json(indent=2))
