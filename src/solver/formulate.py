@@ -6,7 +6,7 @@ from pathlib import Path
 
 import mip
 
-from models import WorkDay, Solution, Task, StaffMember, TaskAllocation
+from models import WorkDay, Solution, Task, StaffMember, TaskAllocation, TaskType
 from solver.helpers import build_matrices, prepare_work_day, load_work_day
 from solver.model_parameters import ModelParameters
 
@@ -23,6 +23,7 @@ def build_and_solve(
 
     n_workers = len(work_day.staff_members)
     n_tasks = len(work_day.tasks)
+    n_skills = len(list(TaskType))
 
     # worker x task matrix
     worker_task_matrix = [
@@ -75,8 +76,18 @@ def build_and_solve(
             <= 0
         )
 
-    # Workers need breaks (logic tbd, maybe ignore for prototype)
+    # TODO(j.swannack): Workers need breaks (logic tbd, maybe ignore for prototype)
+
     # Workers can only work on tasks that they have the skills for
+    for i, j in product(range(n_workers), range(n_tasks)):
+        for skill_i in range(n_skills):
+            if model_parameters.task_skillset_matrix[j][skill_i]:
+                model += (
+                    worker_task_matrix[i][j] * model_parameters.worker_skillset_matrix[i][skill_i]
+                    - worker_task_matrix[i][j] * model_parameters.task_skillset_matrix[j][skill_i]
+                    <= 0
+                )
+
 
     # Objective
 
