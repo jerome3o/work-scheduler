@@ -1,6 +1,7 @@
-from typing import List, Tuple, Union
+from typing import List, Union, Dict
+import secrets
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 
@@ -79,12 +80,45 @@ class WorkDay(BaseModel):
     #   Ideally it should be the start of the day we're interested in,
     #   but it can be any time really. I will use it to count minutes from for all time
     #   values in the solver (i.e. 9am is 540 minutes from the start of the day)
-    # relative_to: datetime
+    relative_to: datetime = None
 
 
 # Solution related models
+class InfeasibleTask(BaseModel):
+    reason: str
+    task: Task
+
+
+class TaskAllocation(BaseModel):
+    task: List[Task]
+    staff_member: StaffMember
+
+
+class ModelValues(BaseModel):
+    vars: Dict[str, float]
+    objective: float
+
+class SolverOutput(BaseModel):
+    allocations: List[TaskAllocation]
+    infeasible_tasks: List[InfeasibleTask]
+    model_values: ModelValues
+
+
+class SolverInput(BaseModel):
+    raw_work_day: WorkDay
+    processed_work_day: WorkDay
+
+
+class SolutionMeta(BaseModel):
+    timestamp: datetime = Field(default_factory=datetime.now)
+    solution_id: str = Field(default_factory=lambda: secrets.token_hex(8))
+    solver_version: str = "dev"
+
+
 class Solution(BaseModel):
-    allocations: List[Tuple[StaffMember, Task]]
+    input: SolverInput
+    output: SolverOutput
+    meta: SolutionMeta = Field(default_factory=SolutionMeta)
 
 
 #triplicates need to be same person, if they can't do the last one they can't do the first one
