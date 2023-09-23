@@ -82,14 +82,18 @@ class WorkDay(BaseModel):
     relative_to: datetime = None
 
 
+# Solution related models
 class InfeasibleTask(BaseModel):
     reason: str
     task: Task
 
 
-# Solution related models
+class TaskAllocation(BaseModel):
+    task: List[Task]
+    staff_member: StaffMember
+
 class Solution(BaseModel):
-    allocations: List[Tuple[StaffMember, Task]]
+    allocations: List[TaskAllocation]
     infeasible_tasks: List[InfeasibleTask]
 
 

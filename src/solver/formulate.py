@@ -6,12 +6,14 @@ from pathlib import Path
 
 import mip
 
-from models import WorkDay, Solution, Task, StaffMember
+from models import WorkDay, Solution, Task, StaffMember, TaskAllocation
 from solver.helpers import build_matrices, prepare_work_day, load_work_day
 from solver.model_parameters import ModelParameters
 
 _logger = logging.getLogger(__name__)
 
+
+START_BUFFER = 0
 
 def build_and_solve(
     work_day: WorkDay,
@@ -62,7 +64,7 @@ def build_and_solve(
         model += (
             worker_task_matrix[i][j] * model_parameters.worker_start_vector[i]
             - worker_task_matrix[i][j] * model_parameters.task_start_vector[j]
-            <= 0
+            <= -START_BUFFER
         )
 
     # Workers can only work on tasks that finish before their end time
@@ -83,6 +85,7 @@ def build_and_solve(
     highest_workload = model.add_var(name="highest_workload")
 
     for i in range(n_workers):
+        # TODO(j.swannack): Use task durations
         model += mip.xsum(worker_task_matrix[i]) <= highest_workload
         model += mip.xsum(worker_task_matrix[i]) >= lowest_workload
 
@@ -90,14 +93,18 @@ def build_and_solve(
 
     # TODO(j.swannack): Minimize high skilled workers doing "any" task
 
-    model.optimize()
+    result = model.optimize()
 
     allocations = []
 
     for i in range(n_workers):
+        tasks = []
         for j in range(n_tasks):
             if worker_task_matrix[i][j].x >= 0.99:
-                allocations.append((work_day.staff_members[i], work_day.tasks[j]))
+                tasks.append(work_day.tasks[j])
+        allocations.append(
+            TaskAllocation(task=tasks, staff_member=work_day.staff_members[i])
+        )
 
     return allocations
 
