@@ -6,7 +6,7 @@ from pathlib import Path
 
 import mip
 
-from models import WorkDay, Solution, Task, StaffMember, TaskAllocation, TaskType
+from models import WorkDay, Solution, Task, StaffMember, TaskAllocation, TaskType, ModelValues
 from solver.helpers import build_matrices, prepare_work_day, load_work_day
 from solver.model_parameters import ModelParameters
 
@@ -18,7 +18,7 @@ START_BUFFER = 0
 def build_and_solve(
     work_day: WorkDay,
     model_parameters: ModelParameters,
-) -> List[Tuple[StaffMember, Task]]:
+) -> Tuple[List[TaskAllocation], ModelValues]:
     model = mip.Model("work-scheduler")
 
     n_workers = len(work_day.staff_members)
@@ -27,8 +27,8 @@ def build_and_solve(
 
     # worker x task matrix
     worker_task_matrix = [
-        [model.add_var(var_type=mip.BINARY) for _ in work_day.tasks]
-        for _ in work_day.staff_members
+        [model.add_var(name=f"{i},{j}", var_type=mip.BINARY) for i, _ in enumerate(work_day.tasks)]
+        for j, _ in enumerate(work_day.staff_members)
     ]
 
     # task x worker matrix
@@ -113,7 +113,18 @@ def build_and_solve(
 
     result = model.optimize()
 
+    if result != mip.OptimizationStatus.OPTIMAL:
+        raise Exception(f"Unable to find optimal solution, status: {result.status}")
+
     allocations = []
+
+    vars = {v.name: v.x for v in model.vars}
+    objective = model.objective_value
+
+    model_values = ModelValues(
+        vars=vars,
+        objective=objective,
+    )
 
     for i in range(n_workers):
         tasks = []
@@ -124,16 +135,17 @@ def build_and_solve(
             TaskAllocation(task=tasks, staff_member=work_day.staff_members[i])
         )
 
-    return allocations
+    return allocations, model_values
 
 
 def solve(work_day: WorkDay) -> Solution:
     work_day, infeasible_tasks = prepare_work_day(work_day)
     model_parameters = build_matrices(work_day)
-    allocations = build_and_solve(work_day, model_parameters)
+    allocations, model_values = build_and_solve(work_day, model_parameters)
     return Solution(
         allocations=allocations,
         infeasible_tasks=infeasible_tasks,
+        model_values=model_values,
     )
 
 

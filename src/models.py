@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Dict
 from enum import Enum
 from pydantic import BaseModel
 from datetime import datetime
@@ -92,9 +92,15 @@ class TaskAllocation(BaseModel):
     task: List[Task]
     staff_member: StaffMember
 
+
+class ModelValues(BaseModel):
+    vars: Dict[str, float]
+    objective: float
+
 class Solution(BaseModel):
     allocations: List[TaskAllocation]
     infeasible_tasks: List[InfeasibleTask]
+    model_values: ModelValues
 
 
 #triplicates need to be same person, if they can't do the last one they can't do the first one
