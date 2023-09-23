@@ -14,12 +14,21 @@ def visualise_task_allocations(task_allocations: List[TaskAllocation]):
 
     for task_allocation in task_allocations:
 
+        data.append(
+            {
+                "task_start": task_allocation.staff_member.shift.start_time,
+                "task_end": task_allocation.staff_member.shift.finish_time,
+                "staff_member": task_allocation.staff_member.name,
+                "label": task_allocation.staff_member.name + " Shift"
+            }
+        )
+
         for task in task_allocation.task:
             task_dict = json.loads(task.json())
             task_dict["staff_member"] = task_allocation.staff_member.name
+            task_dict["label"] = task_allocation.staff_member.name
             task_dict["task_start"] = task.time
             task_dict["task_end"] = task.time + timedelta(minutes=task.duration)
-            task_dict["opacity"] = 1
             data.append(task_dict)
 
     df = pd.DataFrame(data)
@@ -33,7 +42,7 @@ def visualise_task_allocations(task_allocations: List[TaskAllocation]):
         df,
         x_start="task_start",
         x_end="task_end",
-        y="staff_member",
+        y="label",
         color="staff_member",
         hover_data=df.columns,
     )
