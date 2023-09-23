@@ -21,6 +21,7 @@ Info on worker model also [here](src/models.py).
 
 ## Constraints
 
+* All tasks must be assigned
 * Workers can only work on one task at a time
 * Workers can only work on tasks that they have the skills for
 * Workers can only work on tasks that are within their shift time
