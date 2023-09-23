@@ -68,11 +68,16 @@ def build_context(
     }
 
 
+def generate_report(solution: Solution, report_output_dir: Union[str, Path]):
+    text = build_report(solution, report_output_dir=report_output_dir)
+    (Path(report_output_dir) / "index.html").write_text(text)
+
+
 def main():
     solution = Solution.parse_file("test_data/solver/workday_example_1.out.json")
     report_dir = _REPORT_ROOT / solution.meta.solution_id
-    text = build_report(solution, report_output_dir=report_dir)
-    (report_dir / "index.html").write_text(text)
+    generate_report(solution, report_dir)
+
 
 
 if __name__ == "__main__":

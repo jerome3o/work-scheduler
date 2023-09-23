@@ -35,3 +35,20 @@ Secondary objectives:
 
 Display a `Solution` object in some way that a staff member can follow. Needs to be printable, ideally an excel sheet that can edited.
 There needs to be a per staff member allocations
+
+## How to use the Solver
+
+Use the `solver.pipeline.run_solver` function, i.e.:
+
+```python
+from solver.pipeline import run_solver
+
+# You can get your work day from anywhere, but here's an example loading from a file
+work_day = WorkDay.parse_file(input_file)
+
+run_solver(
+    work_day=work_day,
+    output_dir="outputs/example_report",
+    open_browser=True,
+)
+```
