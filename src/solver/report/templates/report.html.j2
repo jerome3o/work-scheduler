@@ -23,8 +23,14 @@
             <br>
             Tasks count: {{ summary.n_tasks }}
         </p>
+
+        <h1>Shift Overview</h1>
         <iframe id="igraph" scrolling="no" style="border:none;" seamless="seamless"
-            src="{{ plots.allocations }}" height="525" width="100%"></iframe>
+            src="{{ plots.shifts }}" height="525" width="100%"></iframe>
+
+        <h1>Workload Overview</h1>
+        <iframe id="igraph" scrolling="no" style="border:none;" seamless="seamless"
+            src="{{ plots.workloads }}" height="525" width="100%"></iframe>
     </div>
 </body>
 

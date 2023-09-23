@@ -6,12 +6,13 @@ from typing import Union
 import jinja2
 
 from models import Solution
-from solver.visualisation.solution import visualise_task_allocations
+from solver.visualisation.solution import visualise_shifts, visualise_workloads
 
 _REPORT_ROOT = Path() / "outputs" / "reports"
 _STATIC_DIR = Path(__file__).parent / "static"
 
-_ALLOCATIONS_PLOT_FILENAME = "task_allocations.html"
+_SHIFTS_PLOT_FILENAME = "shifts.html"
+_WORKLOAD_PLOT_FILENAME = "workloads.html"
 
 
 def build_report(
@@ -45,9 +46,13 @@ def build_context(
         if static_file.is_file():
             (report_output_dir / static_file.name).write_text(static_file.read_text())
 
-    # Visualise task allocations
-    fig = visualise_task_allocations(solution.output.allocations)
-    fig.write_html(str(report_output_dir / _ALLOCATIONS_PLOT_FILENAME))
+    # Visualise shifts
+    shifts_fig = visualise_shifts(solution.output.allocations)
+    shifts_fig.write_html(str(report_output_dir / _SHIFTS_PLOT_FILENAME))
+
+    # Visualise workloads
+    workloads_fig = visualise_workloads(solution.output.allocations)
+    workloads_fig.write_html(str(report_output_dir / _WORKLOAD_PLOT_FILENAME))
 
     return {
         "solution": json.loads(solution.json()),
@@ -57,7 +62,8 @@ def build_context(
             "n_tasks": len(solution.input.processed_work_day.tasks),
         },
         "plots": {
-            "allocations": _ALLOCATIONS_PLOT_FILENAME,
+            "shifts": _SHIFTS_PLOT_FILENAME,
+            "workloads": _WORKLOAD_PLOT_FILENAME,
         }
     }
 

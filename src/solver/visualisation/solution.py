@@ -2,26 +2,28 @@ import json
 from datetime import timedelta
 from typing import List
 
-from models import SolverOutput, TaskAllocation, Task, StaffMember
+from models import SolverOutput, TaskAllocation
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 
 
-def visualise_task_allocations(task_allocations: List[TaskAllocation]):
-
+def _get_allocations_df(
+    task_allocations: List[TaskAllocation],
+    include_shift: bool = False,
+) -> pd.DataFrame:
     data = []
 
     for task_allocation in task_allocations:
-
-        data.append(
-            {
-                "task_start": task_allocation.staff_member.shift.start_time,
-                "task_end": task_allocation.staff_member.shift.finish_time,
-                "staff_member": task_allocation.staff_member.name,
-                "label": task_allocation.staff_member.name + " Shift"
-            }
-        )
+        if include_shift:
+            data.append(
+                {
+                    "task_start": task_allocation.staff_member.shift.start_time,
+                    "task_end": task_allocation.staff_member.shift.finish_time,
+                    "staff_member": task_allocation.staff_member.name,
+                    "label": task_allocation.staff_member.name + " Shift",
+                }
+            )
 
         for task in task_allocation.task:
             task_dict = json.loads(task.json())
@@ -31,7 +33,11 @@ def visualise_task_allocations(task_allocations: List[TaskAllocation]):
             task_dict["task_end"] = task.time + timedelta(minutes=task.duration)
             data.append(task_dict)
 
-    df = pd.DataFrame(data)
+    return pd.DataFrame(data)
+
+
+def visualise_shifts(task_allocations: List[TaskAllocation]) -> go.Figure:
+    df = _get_allocations_df(task_allocations, include_shift=True)
 
     # Convert time columns to datetime format
     df["task_start"] = pd.to_datetime(df["task_start"])
@@ -46,17 +52,34 @@ def visualise_task_allocations(task_allocations: List[TaskAllocation]):
         color="staff_member",
         hover_data=df.columns,
     )
-    fig.update_yaxes(
-        autorange="reversed"
-    )  # reverse the order of tasks, it's more natural in gantt charts
+    return fig
 
+
+def visualise_workloads(allocations: List[TaskAllocation]) -> go.Figure:
+    df = _get_allocations_df(allocations)
+    fig = px.bar(
+        df,
+        x="staff_member",
+        y="duration",
+        color="title",
+        hover_data=[
+            "title",
+            "study",
+            "patient",
+            "duration",
+            "task_start",
+            "required_attributes",
+        ],
+        barmode="stack",
+    )
+    fig.update_layout(showlegend=False)
     return fig
 
 
 def main():
     f = "test_data/solver/workday_example_1.out.json"
     s = SolverOutput.parse_file(f)
-    fig = visualise_task_allocations(s.allocations)
+    fig = visualise_shifts(s.allocations)
     fig.show()
 
 
