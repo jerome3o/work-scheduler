@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 
-from models import WorkDay
 from solver.helpers import build_matrices, prepare_work_day, load_work_day
 from solver.model_parameters import ModelParameters
 
