@@ -116,7 +116,7 @@ class SolutionMeta(BaseModel):
 
 
 class Solution(BaseModel):
-    input: WorkDay
+    input: SolverInput
     output: SolverOutput
     meta: SolutionMeta = Field(default_factory=SolutionMeta)
 

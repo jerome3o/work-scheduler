@@ -50,17 +50,14 @@ def visualise_task_allocations(task_allocations: List[TaskAllocation]):
         autorange="reversed"
     )  # reverse the order of tasks, it's more natural in gantt charts
 
-    fig.show()
-
-
-def visualise_solution(solution: SolverOutput):
-    visualise_task_allocations(solution.allocations)
+    return fig
 
 
 def main():
     f = "test_data/solver/workday_example_1.out.json"
     s = SolverOutput.parse_file(f)
-    visualise_solution(s)
+    fig = visualise_task_allocations(s.allocations)
+    fig.show()
 
 
 if __name__ == "__main__":
