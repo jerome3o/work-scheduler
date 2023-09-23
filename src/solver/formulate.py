@@ -85,9 +85,16 @@ def build_and_solve(
     highest_workload = model.add_var(name="highest_workload")
 
     for i in range(n_workers):
-        # TODO(j.swannack): Use task durations
-        model += mip.xsum(worker_task_matrix[i]) <= highest_workload
-        model += mip.xsum(worker_task_matrix[i]) >= lowest_workload
+        workload_duration = [
+            worker_task_matrix[i][j] * (
+                model_parameters.task_finish_vector[j]
+                - model_parameters.task_start_vector[j]
+            )
+            for j in range(n_tasks)
+        ]
+
+        model += mip.xsum(workload_duration) <= highest_workload
+        model += mip.xsum(workload_duration) >= lowest_workload
 
     model.objective = mip.minimize(highest_workload - lowest_workload)
 
