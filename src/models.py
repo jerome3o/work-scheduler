@@ -1,6 +1,7 @@
-from typing import List, Tuple, Union, Dict
+from typing import List, Union, Dict
+import secrets
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 
@@ -97,10 +98,27 @@ class ModelValues(BaseModel):
     vars: Dict[str, float]
     objective: float
 
-class Solution(BaseModel):
+class SolverOutput(BaseModel):
     allocations: List[TaskAllocation]
     infeasible_tasks: List[InfeasibleTask]
     model_values: ModelValues
+
+
+class SolverInput(BaseModel):
+    raw_work_day: WorkDay
+    processed_work_day: WorkDay
+
+
+class SolutionMeta(BaseModel):
+    timestamp: datetime = Field(default_factory=datetime.now)
+    solution_id: str = Field(default_factory=lambda: secrets.token_hex(8))
+    solver_version: str = "dev"
+
+
+class Solution(BaseModel):
+    input: WorkDay
+    output: SolverOutput
+    meta: SolutionMeta = Field(default_factory=SolutionMeta)
 
 
 #triplicates need to be same person, if they can't do the last one they can't do the first one

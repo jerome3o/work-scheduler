@@ -6,7 +6,15 @@ from pathlib import Path
 
 import mip
 
-from models import WorkDay, Solution, Task, StaffMember, TaskAllocation, TaskType, ModelValues
+from models import (
+    WorkDay,
+    SolverOutput,
+    TaskAllocation,
+    TaskType,
+    ModelValues,
+    Solution,
+    SolverInput,
+)
 from solver.helpers import build_matrices, prepare_work_day, load_work_day
 from solver.model_parameters import ModelParameters
 
@@ -14,6 +22,7 @@ _logger = logging.getLogger(__name__)
 
 
 START_BUFFER = 0
+
 
 def build_and_solve(
     work_day: WorkDay,
@@ -27,7 +36,10 @@ def build_and_solve(
 
     # worker x task matrix
     worker_task_matrix = [
-        [model.add_var(name=f"{i},{j}", var_type=mip.BINARY) for i, _ in enumerate(work_day.tasks)]
+        [
+            model.add_var(name=f"{i},{j}", var_type=mip.BINARY)
+            for i, _ in enumerate(work_day.tasks)
+        ]
         for j, _ in enumerate(work_day.staff_members)
     ]
 
@@ -83,11 +95,12 @@ def build_and_solve(
         for skill_i in range(n_skills):
             if model_parameters.task_skillset_matrix[j][skill_i]:
                 model += (
-                    worker_task_matrix[i][j] * model_parameters.worker_skillset_matrix[i][skill_i]
-                    - worker_task_matrix[i][j] * model_parameters.task_skillset_matrix[j][skill_i]
+                    worker_task_matrix[i][j]
+                    * model_parameters.worker_skillset_matrix[i][skill_i]
+                    - worker_task_matrix[i][j]
+                    * model_parameters.task_skillset_matrix[j][skill_i]
                     <= 0
                 )
-
 
     # Objective
 
@@ -97,7 +110,8 @@ def build_and_solve(
 
     for i in range(n_workers):
         workload_duration = [
-            worker_task_matrix[i][j] * (
+            worker_task_matrix[i][j]
+            * (
                 model_parameters.task_finish_vector[j]
                 - model_parameters.task_start_vector[j]
             )
@@ -138,14 +152,22 @@ def build_and_solve(
     return allocations, model_values
 
 
-def solve(work_day: WorkDay) -> Solution:
+def solve(work_day: WorkDay) -> SolverOutput:
+    original_work_day = work_day.copy()
+
     work_day, infeasible_tasks = prepare_work_day(work_day)
     model_parameters = build_matrices(work_day)
     allocations, model_values = build_and_solve(work_day, model_parameters)
     return Solution(
-        allocations=allocations,
-        infeasible_tasks=infeasible_tasks,
-        model_values=model_values,
+        input=SolverInput(
+            raw_work_day=original_work_day,
+            processed_work_day=work_day,
+        ),
+        output=SolverOutput(
+            allocations=allocations,
+            infeasible_tasks=infeasible_tasks,
+            model_values=model_values,
+        ).dict()
     )
 
 

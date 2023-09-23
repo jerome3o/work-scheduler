@@ -2,7 +2,7 @@ import json
 from datetime import timedelta
 from typing import List
 
-from models import Solution, TaskAllocation, Task, StaffMember
+from models import SolverOutput, TaskAllocation, Task, StaffMember
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
@@ -53,13 +53,13 @@ def visualise_task_allocations(task_allocations: List[TaskAllocation]):
     fig.show()
 
 
-def visualise_solution(solution: Solution):
+def visualise_solution(solution: SolverOutput):
     visualise_task_allocations(solution.allocations)
 
 
 def main():
     f = "test_data/solver/workday_example_1.out.json"
-    s = Solution.parse_file(f)
+    s = SolverOutput.parse_file(f)
     visualise_solution(s)
 
 
