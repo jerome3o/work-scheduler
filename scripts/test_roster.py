@@ -1,4 +1,4 @@
-from src.ui.excel_loader import get_staff_shifts
+from src.excel_loader import get_staff_shifts
 
 def main():
     get_staff_shifts(

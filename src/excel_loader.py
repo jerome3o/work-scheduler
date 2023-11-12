@@ -19,7 +19,7 @@ input_file_paths = []
 input_cohort_names = []
 input_schedule_days = []
 staff_members_roster = []
-study_patient_numbers = []
+study_patient_numbers = []      #TODO: patient dropout functionality?
 date = "MON 07 AUG"
 input_roster = ""
 output_file_path = ""
@@ -180,7 +180,7 @@ def create_task_list(input_file_paths):
                 for patient, time in zip(patients, row[1:]):
                     if patient is not None:
                         if str(time).strip().lower() == 'nan':
-                            task_times[patient] = ""
+                            # task_times[patient] = ""
                             continue
                         if isinstance(time, datetime):
                             time = time.time()
@@ -234,8 +234,9 @@ def copy_schedules():
 
     i=0
 
-    custom_style = NamedStyle(name='custom_style')
-    custom_style.number_format = 'hh:mm'
+    custom_time_style = NamedStyle(name='custom_style')
+    custom_time_style.number_format = 'hh:mm'
+    output_wb.add_named_style(custom_time_style)
 
     current_row = 1
 
@@ -291,10 +292,10 @@ def copy_schedules():
                     destination_cell = destination_sheet.cell(row=current_row, column=col_index + 1)
                     if type(source_cell[0].value) == dt.time:
                         destination_cell.value = source_cell[0].value
-                        destination_cell.style = custom_style
+                        destination_cell.style = custom_time_style
                     elif type(source_cell[0].value) == dt.datetime:
                         destination_cell.value = source_cell[0].value.time()
-                        destination_cell.style = custom_style
+                        destination_cell.style = custom_time_style
                     else:
                         destination_cell.value = source_cell[0].value
                     destination_cell.font = openpyxl.styles.Font(size=source_cell[0].font.size)
