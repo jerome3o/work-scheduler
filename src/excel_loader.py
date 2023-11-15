@@ -234,9 +234,9 @@ def copy_schedules():
 
     i=0
 
-    custom_time_style = NamedStyle(name='custom_style')
-    custom_time_style.number_format = 'hh:mm'
-    output_wb.add_named_style(custom_time_style)
+    custom_style = NamedStyle(name='custom_style')
+    custom_style.number_format = 'hh:mm'
+    output_wb.add_named_style(custom_style)
 
     current_row = 1
 
@@ -292,10 +292,10 @@ def copy_schedules():
                     destination_cell = destination_sheet.cell(row=current_row, column=col_index + 1)
                     if type(source_cell[0].value) == dt.time:
                         destination_cell.value = source_cell[0].value
-                        destination_cell.style = custom_time_style
+                        destination_cell.style = custom_style
                     elif type(source_cell[0].value) == dt.datetime:
                         destination_cell.value = source_cell[0].value.time()
-                        destination_cell.style = custom_time_style
+                        destination_cell.style = custom_style
                     else:
                         destination_cell.value = source_cell[0].value
                     destination_cell.font = openpyxl.styles.Font(size=source_cell[0].font.size)
