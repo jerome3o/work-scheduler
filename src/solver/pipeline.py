@@ -12,8 +12,12 @@ def run_solver(
     work_day: WorkDay,
     output_dir: Union[str, Path],
     open_browser: bool = True,
+    solution_title: str = None
 ):
     solution = solve(work_day)
+
+    if solution_title is not None:
+        solution.meta.solution_id = f"{solution_title}_{solution.meta.solution_id}"
     generate_report(solution, output_dir)
 
     if open_browser:

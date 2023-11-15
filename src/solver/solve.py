@@ -24,6 +24,10 @@ _logger = logging.getLogger(__name__)
 START_BUFFER = 0
 
 
+class InfeasibleException(Exception):
+    pass
+
+
 def build_and_solve(
     work_day: WorkDay,
     model_parameters: ModelParameters,
@@ -128,7 +132,7 @@ def build_and_solve(
     result = model.optimize()
 
     if result != mip.OptimizationStatus.OPTIMAL:
-        raise Exception(f"Unable to find optimal solution, status: {result.status}")
+        raise InfeasibleException(f"Unable to find optimal solution, status: {result}")
 
     allocations = []
 
@@ -152,7 +156,7 @@ def build_and_solve(
     return allocations, model_values
 
 
-def solve(work_day: WorkDay) -> SolverOutput:
+def solve(work_day: WorkDay) -> Solution:
     original_work_day = work_day.copy()
 
     work_day, infeasible_tasks = prepare_work_day(work_day)
