@@ -119,6 +119,7 @@ class Solution(BaseModel):
     input: SolverInput
     output: SolverOutput
     meta: SolutionMeta = Field(default_factory=SolutionMeta)
+    report_location: str = ""
 
 
 #triplicates need to be same person, if they can't do the last one they can't do the first one
