@@ -1,9 +1,9 @@
-from typing import List, Union, Dict
 import secrets
-from enum import Enum
-from pydantic import BaseModel, Field
 from datetime import datetime
+from enum import Enum
+from typing import Dict, List, Optional
 
+from pydantic import BaseModel, Field
 
 # Staff related models
 
@@ -55,9 +55,8 @@ class Task(BaseModel):
     floor: str
     patient: str
     # time can be string, this is actually indicates it's none
-    # TODO(o.kyle): make this only a datetime, and ignore tasks with no time
-    #   It was originally str to make it easier to put into the results excel
-    time: Union[datetime, str]
+    # TODO(o.kyle): make sure this still works now that time can't be a string or None.
+    time: datetime
     #start_after: datetime
     #finish_before: datetime
     duration: int
@@ -80,7 +79,7 @@ class WorkDay(BaseModel):
     #   Ideally it should be the start of the day we're interested in,
     #   but it can be any time really. I will use it to count minutes from for all time
     #   values in the solver (i.e. 9am is 540 minutes from the start of the day)
-    relative_to: datetime = None
+    relative_to: Optional[datetime] = None
 
 
 # Solution related models
@@ -101,7 +100,6 @@ class ModelValues(BaseModel):
 class SolverOutput(BaseModel):
     allocations: List[TaskAllocation]
     infeasible_tasks: List[InfeasibleTask]
-    model_values: ModelValues
 
 
 class SolverInput(BaseModel):

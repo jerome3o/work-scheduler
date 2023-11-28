@@ -19,7 +19,7 @@ app = FastAPI()
 app.mount(_OUTPUT_ENDPOINT_ROOT, app=StaticFiles(directory="outputs"), name="outputs")
 
 
-@app.get("/solve")
+@app.post("/solve")
 def solve(work_day: WorkDay) -> Solution:
 
     # todo: use a guid for each solution
@@ -37,6 +37,7 @@ def solve(work_day: WorkDay) -> Solution:
         / output_dir.relative_to(_OUTPUT_FILE_ROOT)
         / "index.html"
     )
+    return solution
 
 
 if __name__ == "__main__":

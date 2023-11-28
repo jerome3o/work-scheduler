@@ -135,15 +135,6 @@ def build_and_solve(
         raise InfeasibleException(f"Unable to find optimal solution, status: {result}")
 
     allocations = []
-
-    vars = {v.name: v.x for v in model.vars}
-    objective = model.objective_value
-
-    model_values = ModelValues(
-        vars=vars,
-        objective=objective,
-    )
-
     for i in range(n_workers):
         tasks = []
         for j in range(n_tasks):
@@ -153,7 +144,7 @@ def build_and_solve(
             TaskAllocation(task=tasks, staff_member=work_day.staff_members[i])
         )
 
-    return allocations, model_values
+    return allocations
 
 
 def solve(work_day: WorkDay) -> Solution:
@@ -161,7 +152,7 @@ def solve(work_day: WorkDay) -> Solution:
 
     work_day, infeasible_tasks = prepare_work_day(work_day)
     model_parameters = build_matrices(work_day)
-    allocations, model_values = build_and_solve(work_day, model_parameters)
+    allocations = build_and_solve(work_day, model_parameters)
     return Solution(
         input=SolverInput(
             raw_work_day=original_work_day,
@@ -170,7 +161,6 @@ def solve(work_day: WorkDay) -> Solution:
         output=SolverOutput(
             allocations=allocations,
             infeasible_tasks=infeasible_tasks,
-            model_values=model_values,
         ).dict()
     )
 
