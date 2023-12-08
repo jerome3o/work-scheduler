@@ -3,7 +3,7 @@ console.log('Hello from static/index.js');
 
 function niceButtonFunction() {
     console.log("Nice button clicked!");
-    fetch('/example_endpoint', {
+    fetch('/api/example_endpoint', {
         method: 'GET',
     }).then(response => response.json().then(data => {
 

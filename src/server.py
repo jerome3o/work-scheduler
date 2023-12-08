@@ -29,7 +29,7 @@ def root():
     return RedirectResponse(url="/index.html")
 
 
-@app.get("/example_endpoint")
+@app.get("/api/example_endpoint")
 def example_endpoint():
     global _count
 
@@ -37,7 +37,19 @@ def example_endpoint():
     return {"message": "nice" if _count % 2 == 0 else "not nice", "count": _count}
 
 
-@app.post("/solve")
+@app.post("/api/process-excel")
+def process_excel():
+    # TODO: file uploads
+    #   * server side look for "fastapi file uploads"
+    #   * frontend side look for "vanilla javascript file upload
+    # I think "multipart upload" is a thing you're gonna wanna look at
+
+    # TODO: once you have the excel files somewhere, run your processing code
+    #   Maybe also call the solver?
+    pass
+
+
+@app.post("/api/solve")
 def solve(work_day: WorkDay) -> Solution:
 
     # todo: use a guid for each solution
@@ -68,4 +80,4 @@ if __name__ == "__main__":
 
     from uvicorn import run
 
-    run(app="solver.server:app", reload=True)
+    run(app="server:app", reload=True)
