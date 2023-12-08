@@ -6,17 +6,35 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 
 from models import Solution, WorkDay
 from solver.pipeline import run_solver
 
 _OUTPUT_FILE_ROOT = Path("outputs")
 _OUTPUT_ENDPOINT_ROOT = "/outputs"
+_FE_FILE_ROOT = "/"
 
+
+_count = 0
 
 app = FastAPI()
 
 app.mount(_OUTPUT_ENDPOINT_ROOT, app=StaticFiles(directory="outputs"), name="outputs")
+
+
+@app.get("/")
+def root():
+    # redirect to index.html
+    return RedirectResponse(url="/index.html")
+
+
+@app.get("/example_endpoint")
+def example_endpoint():
+    global _count
+
+    _count = _count + 1
+    return {"message": "nice" if _count % 2 == 0 else "not nice", "count": _count}
 
 
 @app.post("/solve")
@@ -40,6 +58,9 @@ def solve(work_day: WorkDay) -> Solution:
     return solution
 
 
+app.mount(_FE_FILE_ROOT, app=StaticFiles(directory="static"), name="static")
+
+
 if __name__ == "__main__":
     import logging
 
@@ -47,4 +68,4 @@ if __name__ == "__main__":
 
     from uvicorn import run
 
-    run(app=app)
+    run(app="solver.server:app", reload=True)
