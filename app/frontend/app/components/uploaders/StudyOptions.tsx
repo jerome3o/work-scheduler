@@ -25,15 +25,7 @@ export default function StudyUploader({
   return (
     <div className="uploader-container">
       <h2>{studySchedule.name}</h2>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "center",
-          gap: "10px",
-          width: "100%",
-        }}
-      >
+      <div className="button-layout">
         <button>{options?.days}</button>
         <button>{options?.cohorts}</button>
         <button onClick={removeFunction}>x</button>

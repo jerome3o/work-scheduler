@@ -20,7 +20,7 @@ def process_roster(
     # TODO(olivia): implement
 
     return RosterProcessingResult(
-        days=["1", "2", "3"],
+        days=["1", "2", "from server"],
     )
 
 
@@ -31,8 +31,8 @@ def process_study_schedule(
     # TODO(olivia): implement
 
     return StudyScheduleProcessingResult(
-        days=["1", "2", "3"],
-        cohorts=["alpha", "beta", "gamma"],
+        days=["1", "2", "from server"],
+        cohorts=["alpha", "beta", "from server"],
     )
 
 

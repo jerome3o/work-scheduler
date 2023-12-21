@@ -11,7 +11,7 @@ export default function RosterUploader({
 }) {
   const { openFilePicker, filesContent, loading, clear } = useFilePicker({
     accept: `.${fileType}`,
-    onFilesSuccessfullySelected: ({
+    onFilesSuccessfullySelected: async ({
       plainFiles,
       filesContent,
     }: {
@@ -19,6 +19,7 @@ export default function RosterUploader({
       filesContent: any;
     }) => {
       setSelectedFile(plainFiles[0]);
+      await process(plainFiles[0]);
     },
   });
 
@@ -31,12 +32,8 @@ export default function RosterUploader({
     clear();
   }
 
-  async function process() {
-    if (!selectedFile) {
-      return;
-    }
-
-    const result = await processRoster(selectedFile);
+  async function process(file: File) {
+    const result = await processRoster(file);
     setDayOptions(result.days);
   }
 
@@ -45,10 +42,9 @@ export default function RosterUploader({
       <h2>Upload Roster</h2>
       <p>{selectedFile?.name ?? "Please choose a file"}</p>
       {selectedFile ? (
-        <div>
+        <div className="button-layout">
           <button>{dayOptions.length !== 0 ? dayOptions : "loading"}</button>
-          <button onClick={onClear}>clear</button>
-          <button onClick={process}>test upload</button>
+          <button onClick={onClear}>x</button>
         </div>
       ) : (
         <button onClick={openFilePicker}>upload ({fileType})</button>
