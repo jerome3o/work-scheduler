@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   StudySchedule,
   StudyScheduleProcessingResult,
-  GenerateWorkDayOptions,
+  StudyScheduleWithOptions,
   StudyScheduleOptions,
 } from "../models";
 import { useFilePicker } from "use-file-picker";
@@ -14,15 +14,11 @@ import StudyOptions from "./uploaders/StudyOptions";
 import RosterUploader from "./uploaders/RosterUploader";
 
 export default function SchedulerApp() {
-  const [studyScheduleList, setStudyScheduleList] = useState<StudySchedule[]>(
-    []
-  );
+  const [studyScheduleList, setStudyScheduleList] = useState<
+    StudyScheduleWithOptions[]
+  >([]);
   const [roster, setRoster] = useState<File | undefined>(undefined);
   const [rosterDay, setRosterDay] = useState<string | undefined>(undefined);
-
-  const [studyScheduleOptions, setStudyScheduleOptions] = useState<
-    StudyScheduleOptions[]
-  >([]);
 
   const apiWrapper = new ApiWrapper();
 
@@ -37,11 +33,10 @@ export default function SchedulerApp() {
     }) => {
       setStudyScheduleList((prevStudySchedules) => [
         ...prevStudySchedules,
-        { name: plainFiles[0].name, content: plainFiles[0] },
-      ]);
-      setStudyScheduleOptions((prevOptions) => [
-        ...prevOptions,
-        { day: "", cohort: "" },
+        {
+          studySchedule: { name: plainFiles[0].name, content: plainFiles[0] },
+          options: { day: "", cohort: "" },
+        },
       ]);
     },
   });
@@ -53,9 +48,6 @@ export default function SchedulerApp() {
   function removeStudySchedule(index: number) {
     setStudyScheduleList(
       studyScheduleList.filter((studySchedule, i) => i !== index)
-    );
-    setStudyScheduleOptions(
-      studyScheduleOptions.filter((studySchedule, i) => i !== index)
     );
   }
 
@@ -80,19 +72,19 @@ export default function SchedulerApp() {
     }
 
     const studyScheduleFiles = studyScheduleList.map(
-      (studySchedule) => studySchedule.content
+      (studySchedule) => studySchedule.studySchedule.content
     );
 
     const workDay = await apiWrapper.generateWorkDay(
       studyScheduleFiles,
       roster,
       {
-        studyScheduleOptions,
+        studyScheduleOptions: studyScheduleList.map(
+          (studySchedule) => studySchedule.options
+        ),
         rosterDay: rosterDay ?? "",
       }
     );
-
-    console.log(workDay);
   }
 
   return (
@@ -120,25 +112,15 @@ export default function SchedulerApp() {
         {studyScheduleList.map((studySchedule, index) => {
           return (
             <StudyOptions
-              // todo: tidy this up
-              day={studyScheduleOptions[index].day}
-              setDay={(day) =>
-                setStudyScheduleOptions((prevOptions) => {
-                  const newOptions = [...prevOptions];
-                  newOptions[index].day = day;
-                  return newOptions;
-                })
-              }
-              cohort={studyScheduleOptions[index].cohort}
-              setCohort={(cohort) =>
-                setStudyScheduleOptions((prevOptions) => {
-                  const newOptions = [...prevOptions];
-                  newOptions[index].cohort = cohort;
-                  return newOptions;
-                })
-              }
-              key={studySchedule.name + index}
-              studySchedule={studySchedule}
+              key={studySchedule.studySchedule.name + index}
+              studyScheduleWithOptions={studySchedule}
+              setStudyScheduleWithOptions={(
+                studyWithOptions: StudyScheduleWithOptions
+              ) => {
+                const newStudySchedules = [...studyScheduleList];
+                newStudySchedules[index] = studyWithOptions;
+                setStudyScheduleList(newStudySchedules);
+              }}
               processStudySchedule={processStudySchedule}
               removeFunction={() => removeStudySchedule(index)}
             />

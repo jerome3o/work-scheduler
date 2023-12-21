@@ -27,6 +27,11 @@ interface GenerateWorkDayOptions {
   rosterDay: string;
 }
 
+interface StudyScheduleWithOptions {
+  studySchedule: StudySchedule;
+  options: StudyScheduleOptions;
+}
+
 export {
   type StudySchedule,
   type RosterProcessingResult,
@@ -34,4 +39,5 @@ export {
   type WorkDay,
   type StudyScheduleOptions,
   type GenerateWorkDayOptions,
+  type StudyScheduleWithOptions,
 };

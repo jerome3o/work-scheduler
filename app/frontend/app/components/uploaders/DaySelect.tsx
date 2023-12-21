@@ -10,10 +10,7 @@ export default function DaySelect({
   return (
     <div className="day-select">
       <p>Day:</p>
-      <select
-        value={value}
-        onChange={() => (e: any) => setValue(e.target.value)}
-      >
+      <select value={value} onChange={(e: any) => setValue(e.target.value)}>
         {options.map((day, i) => {
           return <option key={i}>{day}</option>;
         })}
