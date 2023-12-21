@@ -1,26 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { StudySchedule } from "../models";
+import { StudySchedule, StudyScheduleProcessingResult } from "../models";
 import { useFilePicker } from "use-file-picker";
 
 import StudyOptions from "./uploaders/StudyOptions";
 import RosterUploader from "./uploaders/RosterUploader";
 
 export default function SchedulerApp() {
-  const [studySchedules, setStudySchedules] = useState<StudySchedule[]>([]);
+  const [studyScheduleInfoList, setStudyScheduleInfoList] = useState<
+    StudySchedule[]
+  >([]);
 
   const { openFilePicker, filesContent, loading } = useFilePicker({
     accept: `.xlsx`,
-    onFilesSuccessfullySelected: ({
+    onFilesSuccessfullySelected: async ({
       plainFiles,
       filesContent,
     }: {
       plainFiles: File[];
       filesContent: any;
     }) => {
-      setStudySchedules([
-        ...studySchedules,
+      const i = studyScheduleInfoList.length;
+      setStudyScheduleInfoList((prevStudySchedules) => [
+        ...prevStudySchedules,
         { name: plainFiles[0].name, content: plainFiles[0] },
       ]);
     },
@@ -31,12 +34,30 @@ export default function SchedulerApp() {
   }
 
   function removeStudySchedule(index: number) {
-    setStudySchedules(studySchedules.filter((studySchedule, i) => i !== index));
+    setStudyScheduleInfoList(
+      studyScheduleInfoList.filter((studySchedule, i) => i !== index)
+    );
   }
 
-  function processRoster(file: File) {
+  async function processRoster(file: File) {
+    // async sleep for a second
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     return {
       days: ["1", "2", "3", "4"],
+    };
+  }
+
+  async function processStudySchedule(
+    file: File
+  ): Promise<StudyScheduleProcessingResult> {
+    // async sleep for a second
+    console.log("processing study schedule");
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log("processing study schedule done");
+    return {
+      days: ["1", "2", "3", "4"],
+      cohorts: ["alpha", "beta"],
     };
   }
 
@@ -58,11 +79,12 @@ export default function SchedulerApp() {
           fileType="xlsx"
           processRoster={processRoster}
         ></RosterUploader>
-        {studySchedules.map((studySchedule, index) => {
+        {studyScheduleInfoList.map((studySchedule, index) => {
           return (
             <StudyOptions
               key={studySchedule.name + index}
               studySchedule={studySchedule}
+              processStudySchedule={processStudySchedule}
               removeFunction={() => removeStudySchedule(index)}
             />
           );

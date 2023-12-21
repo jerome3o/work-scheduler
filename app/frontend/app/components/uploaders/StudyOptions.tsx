@@ -1,15 +1,29 @@
-import { useState } from "react";
-import { useFilePicker } from "use-file-picker";
+import { useState, useEffect } from "react";
 
-import { StudySchedule } from "../../models";
+import { StudySchedule, StudyScheduleProcessingResult } from "../../models";
 
 export default function StudyUploader({
   studySchedule,
+  processStudySchedule,
   removeFunction,
 }: {
   studySchedule: StudySchedule;
+  processStudySchedule: (file: File) => Promise<StudyScheduleProcessingResult>;
   removeFunction: () => void;
 }) {
+  const [dayOptions, setDayOptions] = useState<string[]>([]);
+  const [cohortOptions, setCohortOptions] = useState<string[]>([]);
+
+  async function process() {
+    const result = await processStudySchedule(studySchedule.content);
+    setDayOptions(result.days);
+    setCohortOptions(result.cohorts);
+  }
+
+  useEffect(() => {
+    process();
+  }, []);
+
   return (
     <div className="uploader-container">
       <h2>{studySchedule.name}</h2>
@@ -22,8 +36,8 @@ export default function StudyUploader({
           width: "100%",
         }}
       >
-        <button>Cohort</button>
-        <button>Day</button>
+        <button>{dayOptions}</button>
+        <button>{cohortOptions}</button>
         <button onClick={removeFunction}>x</button>
       </div>
     </div>

@@ -7,7 +7,7 @@ export default function RosterUploader({
   processRoster,
 }: {
   fileType: string;
-  processRoster: (file: File) => RosterProcessingResult;
+  processRoster: (file: File) => Promise<RosterProcessingResult>;
 }) {
   const { openFilePicker, filesContent, loading, clear } = useFilePicker({
     accept: `.${fileType}`,
@@ -33,12 +33,12 @@ export default function RosterUploader({
     clear();
   }
 
-  function process() {
+  async function process() {
     if (!selectedFile) {
       return;
     }
 
-    const result = processRoster(selectedFile);
+    const result = await processRoster(selectedFile);
     setDayOptions(result.days);
   }
 
