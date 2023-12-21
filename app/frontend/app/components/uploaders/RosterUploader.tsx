@@ -47,7 +47,11 @@ export default function RosterUploader({
       <p>{selectedFile?.name ?? "Please choose a file"}</p>
       {selectedFile ? (
         <div className="button-layout">
-          <button>{dayOptions.length !== 0 ? dayOptions : "loading"}</button>
+          <select>
+            {dayOptions?.map((day) => {
+              return <option>{day}</option>;
+            })}
+          </select>
           <button onClick={onClear}>x</button>
         </div>
       ) : (

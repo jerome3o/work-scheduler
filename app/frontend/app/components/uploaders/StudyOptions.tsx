@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 import { StudySchedule, StudyScheduleProcessingResult } from "../../models";
 
@@ -26,8 +26,13 @@ export default function StudyUploader({
     <div className="uploader-container">
       <h2>{studySchedule.name}</h2>
       <div className="button-layout">
-        <button>{options?.days}</button>
-        <button>{options?.cohorts}</button>
+        <select>
+          {options?.days.map((day) => {
+            return <option>{day}</option>;
+          })}
+        </select>
+        {/* text input that has placeholder text "cohort" */}
+        <input type="text" placeholder="cohort name"></input>
         <button onClick={removeFunction}>x</button>
       </div>
     </div>
