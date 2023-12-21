@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Report</title>
+</head>
+
+<body>
+    <div class="container" id="main">
+        <h1>
+            Solution Report: {{ solution.meta.solution_id }}
+        </h1>
+        <p>
+            Solution generated: {{ summary.time }}
+            <br>
+            Solver version: {{ solution.meta.solver_version }}
+            <br>
+            Staff count: {{ summary.n_staff }}
+            <br>
+            Tasks count: {{ summary.n_tasks }}
+        </p>
+
+        <h1>Shift Overview</h1>
+        <iframe id="igraph" scrolling="no" style="border:none;" seamless="seamless"
+            src="{{ plots.shifts }}" height="525" width="100%"></iframe>
+
+        <h1>Workload Overview</h1>
+        <iframe id="igraph" scrolling="no" style="border:none;" seamless="seamless"
+            src="{{ plots.workloads }}" height="525" width="100%"></iframe>
+    </div>
+</body>
+
+</html>

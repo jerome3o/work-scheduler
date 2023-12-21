@@ -1,0 +1,5 @@
+/* I all my content in a main div, I would like it to have some padding from the top of the window */
+
+#main {
+    padding-top: 50px;
+}
