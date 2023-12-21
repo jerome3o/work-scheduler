@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from scheduler.constants import OUTPUT_ENDPOINT_ROOT, OUTPUT_FILE_ROOT
-from scheduler.routes.process_file import router as process_file_router
+from scheduler.routes.process_files import router as process_file_router
 from scheduler.routes.solve import router as solve_router
 
 
