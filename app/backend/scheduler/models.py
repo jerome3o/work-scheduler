@@ -131,3 +131,15 @@ class Solution(BaseModel):
 
 # Other considerations
 # Continuity of tasks per staff member
+
+
+### API Models ###
+
+
+class RosterProcessingResult(BaseModel):
+    days: List[str]
+
+
+class StudyScheduleProcessingResult(BaseModel):
+    days: List[str]
+    cohorts: List[str]
