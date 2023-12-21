@@ -101,3 +101,20 @@ button:hover {
 .autocomplete {
   width: 100%;
 }
+
+.day-select {
+  /* row */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.day-select p {
+  margin: 0px 10px;
+  padding: 0px;
+}
+
+
+.day-select select {
+  height: 100%;
+}

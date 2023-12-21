@@ -93,6 +93,7 @@ export default function SchedulerApp() {
           processRoster={processRoster}
           changeRoster={setRoster}
         ></RosterUploader>
+        <h3>Study Schedules:</h3>
         {studyScheduleList.map((studySchedule, index) => {
           return (
             <StudyOptions
@@ -109,7 +110,7 @@ export default function SchedulerApp() {
       </div>
       <div id="generate-button-div">
         <button id="generate-button" onClick={generateSchedule}>
-          Generate
+          Generate Task Allocations
         </button>
       </div>
     </div>

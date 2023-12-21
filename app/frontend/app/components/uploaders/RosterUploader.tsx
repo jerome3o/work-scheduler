@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useFilePicker } from "use-file-picker";
 import { RosterProcessingResult } from "../../models";
+import DaySelect from "./DaySelect";
 
 export default function RosterUploader({
   fileType,
@@ -47,11 +48,7 @@ export default function RosterUploader({
       <p>{selectedFile?.name ?? "Please choose a file"}</p>
       {selectedFile ? (
         <div className="button-layout">
-          <select>
-            {dayOptions?.map((day) => {
-              return <option>{day}</option>;
-            })}
-          </select>
+          <DaySelect options={dayOptions} />
           <button onClick={onClear}>x</button>
         </div>
       ) : (
