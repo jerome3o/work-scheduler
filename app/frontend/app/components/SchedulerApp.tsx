@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { StudySchedule, StudyScheduleProcessingResult } from "../models";
 import { useFilePicker } from "use-file-picker";
+import ApiWrapper from "../apiWrapper";
 
 import StudyOptions from "./uploaders/StudyOptions";
 import RosterUploader from "./uploaders/RosterUploader";
@@ -11,6 +12,8 @@ export default function SchedulerApp() {
   const [studyScheduleInfoList, setStudyScheduleInfoList] = useState<
     StudySchedule[]
   >([]);
+
+  const apiWrapper = new ApiWrapper();
 
   const { openFilePicker, filesContent, loading } = useFilePicker({
     accept: `.xlsx`,
@@ -40,25 +43,13 @@ export default function SchedulerApp() {
   }
 
   async function processRoster(file: File) {
-    // async sleep for a second
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    return {
-      days: ["1", "2", "3", "4"],
-    };
+    return await apiWrapper.processRoster(file);
   }
 
   async function processStudySchedule(
     file: File
   ): Promise<StudyScheduleProcessingResult> {
-    // async sleep for a second
-    console.log("processing study schedule");
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log("processing study schedule done");
-    return {
-      days: ["1", "2", "3", "4"],
-      cohorts: ["alpha", "beta"],
-    };
+    return await apiWrapper.processStudySchedule(file);
   }
 
   return (

@@ -11,18 +11,16 @@ export default function StudyUploader({
   processStudySchedule: (file: File) => Promise<StudyScheduleProcessingResult>;
   removeFunction: () => void;
 }) {
-  const [dayOptions, setDayOptions] = useState<string[]>([]);
-  const [cohortOptions, setCohortOptions] = useState<string[]>([]);
+  const [options, setOptions] = useState<
+    StudyScheduleProcessingResult | undefined
+  >(undefined);
 
   async function process() {
     const result = await processStudySchedule(studySchedule.content);
-    setDayOptions(result.days);
-    setCohortOptions(result.cohorts);
+    setOptions(result);
   }
 
-  useEffect(() => {
-    process();
-  }, []);
+  if (!options) process();
 
   return (
     <div className="uploader-container">
@@ -36,8 +34,8 @@ export default function StudyUploader({
           width: "100%",
         }}
       >
-        <button>{dayOptions}</button>
-        <button>{cohortOptions}</button>
+        <button>{options?.days}</button>
+        <button>{options?.cohorts}</button>
         <button onClick={removeFunction}>x</button>
       </div>
     </div>

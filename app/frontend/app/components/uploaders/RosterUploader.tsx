@@ -18,8 +18,6 @@ export default function RosterUploader({
       plainFiles: File[];
       filesContent: any;
     }) => {
-      // this callback is called when there were no validation errors
-      console.log("onFilesSuccessfullySelected", plainFiles, filesContent);
       setSelectedFile(plainFiles[0]);
     },
   });
