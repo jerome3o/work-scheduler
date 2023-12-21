@@ -31,6 +31,9 @@ body {
   border-radius: 15px;
   padding: 30px;
   margin: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .uploader-container {
@@ -40,6 +43,12 @@ body {
   border-radius: 15px;
   margin: 10px 0px ;
   padding: 10px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 button {
@@ -69,4 +78,14 @@ button:hover {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+}
+
+#plus-button {
+  border-width: 2px;
+  border-color: var(--colour-4);
+  border-style: solid;
+  border-radius: 15px;
+  margin: 10px 0px ;
+  padding: 10px;
+  width: 100%;
 }
