@@ -3,4 +3,17 @@ interface StudySchedule {
   content: File;
 }
 
-export { type StudySchedule };
+interface RosterProcessingResult {
+  days: string[];
+}
+
+interface StudyScheduleProcessingResult {
+  days: string[];
+  cohorts: string[];
+}
+
+export {
+  type StudySchedule,
+  type RosterProcessingResult,
+  type StudyScheduleProcessingResult,
+};

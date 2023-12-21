@@ -34,6 +34,12 @@ export default function SchedulerApp() {
     setStudySchedules(studySchedules.filter((studySchedule, i) => i !== index));
   }
 
+  function processRoster(file: File) {
+    return {
+      days: ["1", "2", "3", "4"],
+    };
+  }
+
   return (
     <div className="scheduler-app-container">
       <div
@@ -48,7 +54,10 @@ export default function SchedulerApp() {
         }}
       >
         <h1>Scheduler App</h1>
-        <RosterUploader fileType="xlsx"></RosterUploader>
+        <RosterUploader
+          fileType="xlsx"
+          processRoster={processRoster}
+        ></RosterUploader>
         {studySchedules.map((studySchedule, index) => {
           return (
             <StudyOptions
