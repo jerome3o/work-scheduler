@@ -5,9 +5,11 @@ import { RosterProcessingResult } from "../../models";
 export default function RosterUploader({
   fileType,
   processRoster,
+  changeRoster,
 }: {
   fileType: string;
   processRoster: (file: File) => Promise<RosterProcessingResult>;
+  changeRoster: (file: File | undefined) => void;
 }) {
   const { openFilePicker, filesContent, loading, clear } = useFilePicker({
     accept: `.${fileType}`,
@@ -20,6 +22,7 @@ export default function RosterUploader({
     }) => {
       setSelectedFile(plainFiles[0]);
       await process(plainFiles[0]);
+      changeRoster(plainFiles[0]);
     },
   });
 
@@ -28,6 +31,7 @@ export default function RosterUploader({
 
   function onClear() {
     setSelectedFile(undefined);
+    changeRoster(undefined);
     setDayOptions([]);
     clear();
   }

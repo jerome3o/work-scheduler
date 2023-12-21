@@ -17,9 +17,15 @@ interface StudyScheduleInfo {
   options: StudyScheduleProcessingResult | undefined;
 }
 
+interface WorkDay {
+  tasks: string[];
+  staffMembers: string[];
+}
+
 export {
   type StudySchedule,
   type RosterProcessingResult,
   type StudyScheduleProcessingResult,
   type StudyScheduleInfo,
+  type WorkDay,
 };

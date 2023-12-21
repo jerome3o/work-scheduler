@@ -9,9 +9,10 @@ import StudyOptions from "./uploaders/StudyOptions";
 import RosterUploader from "./uploaders/RosterUploader";
 
 export default function SchedulerApp() {
-  const [studyScheduleInfoList, setStudyScheduleInfoList] = useState<
-    StudySchedule[]
-  >([]);
+  const [studyScheduleList, setStudyScheduleList] = useState<StudySchedule[]>(
+    []
+  );
+  const [roster, setRoster] = useState<File | undefined>(undefined);
 
   const apiWrapper = new ApiWrapper();
 
@@ -24,8 +25,7 @@ export default function SchedulerApp() {
       plainFiles: File[];
       filesContent: any;
     }) => {
-      const i = studyScheduleInfoList.length;
-      setStudyScheduleInfoList((prevStudySchedules) => [
+      setStudyScheduleList((prevStudySchedules) => [
         ...prevStudySchedules,
         { name: plainFiles[0].name, content: plainFiles[0] },
       ]);
@@ -37,8 +37,8 @@ export default function SchedulerApp() {
   }
 
   function removeStudySchedule(index: number) {
-    setStudyScheduleInfoList(
-      studyScheduleInfoList.filter((studySchedule, i) => i !== index)
+    setStudyScheduleList(
+      studyScheduleList.filter((studySchedule, i) => i !== index)
     );
   }
 
@@ -50,6 +50,28 @@ export default function SchedulerApp() {
     file: File
   ): Promise<StudyScheduleProcessingResult> {
     return await apiWrapper.processStudySchedule(file);
+  }
+
+  async function generateSchedule() {
+    if (!roster) {
+      alert("Please select a roster");
+      return;
+    }
+    if (studyScheduleList.length === 0) {
+      alert("Please select at least one study schedule");
+      return;
+    }
+
+    const studyScheduleFiles = studyScheduleList.map(
+      (studySchedule) => studySchedule.content
+    );
+
+    const workDay = await apiWrapper.generateWorkDay(
+      studyScheduleFiles,
+      roster
+    );
+
+    console.log(workDay);
   }
 
   return (
@@ -69,8 +91,9 @@ export default function SchedulerApp() {
         <RosterUploader
           fileType="xlsx"
           processRoster={processRoster}
+          changeRoster={setRoster}
         ></RosterUploader>
-        {studyScheduleInfoList.map((studySchedule, index) => {
+        {studyScheduleList.map((studySchedule, index) => {
           return (
             <StudyOptions
               key={studySchedule.name + index}
@@ -85,7 +108,9 @@ export default function SchedulerApp() {
         </button>
       </div>
       <div id="generate-button-div">
-        <button id="generate-button">Generate</button>
+        <button id="generate-button" onClick={generateSchedule}>
+          Generate
+        </button>
       </div>
     </div>
   );

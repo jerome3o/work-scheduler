@@ -38,13 +38,15 @@ def process_study_schedule(
 
 @router.post("/build-workday", response_model=WorkDay)
 def build_workday(
-    files: list[UploadFile] = File(...),
-    json_data: str = Form(...),
+    study_schedule_files: list[UploadFile] = File(...),
+    roster_file: UploadFile = File(...),
+    additional_data: str = Form(...),
 ) -> WorkDay:
     # TODO(olivia): implement
 
-    print(files)
-    print(json_data)
+    print(study_schedule_files)
+    print(roster_file)
+    print(additional_data)
     return WorkDay(
         staff_members=[],
         tasks=[],
