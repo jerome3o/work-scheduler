@@ -14,7 +14,7 @@ export default function Uploader({
   }
 
   return (
-    <div>
+    <div className="uploader-container">
       <h2>Uploader of {title}</h2>
       <p>Upload count {clickCount}</p>
       <button onClick={inc}>upload ({fileType})</button>
