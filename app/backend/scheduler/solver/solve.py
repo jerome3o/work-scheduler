@@ -6,7 +6,7 @@ from pathlib import Path
 
 import mip
 
-from models import (
+from scheduler.models import (
     WorkDay,
     SolverOutput,
     TaskAllocation,
@@ -15,8 +15,8 @@ from models import (
     Solution,
     SolverInput,
 )
-from solver.helpers import build_matrices, prepare_work_day, load_work_day
-from solver.model_parameters import ModelParameters
+from scheduler.solver.helpers import build_matrices, prepare_work_day, load_work_day
+from scheduler.solver.model_parameters import ModelParameters
 
 _logger = logging.getLogger(__name__)
 
@@ -161,7 +161,7 @@ def solve(work_day: WorkDay) -> Solution:
         output=SolverOutput(
             allocations=allocations,
             infeasible_tasks=infeasible_tasks,
-        ).dict()
+        ).dict(),
     )
 
 

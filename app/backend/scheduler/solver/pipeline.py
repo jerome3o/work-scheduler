@@ -2,17 +2,17 @@ from typing import Union
 from pathlib import Path
 from webbrowser import open as _open_browser
 
-from models import WorkDay
+from scheduler.models import WorkDay
 
-from solver.solve import solve
-from solver.report.generate import generate_report
+from scheduler.solver.solve import solve
+from scheduler.solver.report.generate import generate_report
 
 
 def run_solver(
     work_day: WorkDay,
     output_dir: Union[str, Path],
     open_browser: bool = True,
-    solution_title: str = None
+    solution_title: str = None,
 ):
     solution = solve(work_day)
 
@@ -25,6 +25,7 @@ def run_solver(
 
     return solution
 
+
 def main():
     # you don't need to load from a file, you can just pass in the WorkDay object
     input_file = "test_data/solver/workday_example_1.json"
@@ -33,7 +34,9 @@ def main():
         output_dir="outputs/example_report",
     )
 
+
 if __name__ == "__main__":
     import logging
+
     logging.basicConfig(level=logging.INFO)
     main()

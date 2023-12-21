@@ -11,7 +11,6 @@ class ModelParameters:
     worker_finish_vector: List[int]
     worker_skillset_matrix: List[int]
 
-
     def get_time_range(self) -> Tuple[int, int]:
         latest_task_finish = max(self.task_finish_vector)
         earliest_task_start = min(self.task_start_vector)

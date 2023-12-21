@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
-from solver.helpers import build_matrices, prepare_work_day, load_work_day
-from solver.model_parameters import ModelParameters
+from scheduler.solver.helpers import build_matrices, prepare_work_day, load_work_day
+from scheduler.solver.model_parameters import ModelParameters
 
 
 def build_worker_task_count_plot(
@@ -98,24 +98,29 @@ def build_parameter_plot(
 
     return ax
 
+
 def visualise_model_parameters(
     model_parameters_feasible: ModelParameters,
     model_parameters_infeasible: ModelParameters,
 ):
     fig, ((f_ax, if_ax), (f_wt_ax, if_wt_ax)) = plt.subplots(2, 2)
 
-    build_parameter_plot(model_parameters_feasible, ax=f_ax, title="Feasible Tasks Only")
-    build_parameter_plot(model_parameters_infeasible, ax=if_ax, title="Infeasible Tasks Included")
-
-    build_worker_task_count_plot(model_parameters_feasible, ax=f_wt_ax, title="Feasible Tasks Only")
-    build_worker_task_count_plot(model_parameters_infeasible, ax=if_wt_ax, title="Infeasible Tasks Included")
-
-    f_ax.set_xlim(
-        if_ax.get_xlim()
+    build_parameter_plot(
+        model_parameters_feasible, ax=f_ax, title="Feasible Tasks Only"
     )
-    f_wt_ax.set_xlim(
-        if_wt_ax.get_xlim()
+    build_parameter_plot(
+        model_parameters_infeasible, ax=if_ax, title="Infeasible Tasks Included"
     )
+
+    build_worker_task_count_plot(
+        model_parameters_feasible, ax=f_wt_ax, title="Feasible Tasks Only"
+    )
+    build_worker_task_count_plot(
+        model_parameters_infeasible, ax=if_wt_ax, title="Infeasible Tasks Included"
+    )
+
+    f_ax.set_xlim(if_ax.get_xlim())
+    f_wt_ax.set_xlim(if_wt_ax.get_xlim())
 
     fig.tight_layout()
 
@@ -138,7 +143,9 @@ def main():
     for data_file in data_files:
         work_day = load_work_day(data_file)
         work_day_feasible, _ = prepare_work_day(work_day)
-        work_day_infeasible, _ = prepare_work_day(work_day, remove_unstaffed_tasks=False)
+        work_day_infeasible, _ = prepare_work_day(
+            work_day, remove_unstaffed_tasks=False
+        )
         model_parameters_feasible = build_matrices(work_day_feasible)
         model_parameters_infeasible = build_matrices(work_day_infeasible)
         visualise_model_parameters(

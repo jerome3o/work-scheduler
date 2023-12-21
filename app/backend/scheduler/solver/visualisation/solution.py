@@ -2,10 +2,10 @@ import json
 from datetime import timedelta
 from typing import List
 
-from models import SolverOutput, TaskAllocation
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import pandas as pd
+from scheduler.models import SolverOutput, TaskAllocation
 
 
 def _get_allocations_df(

@@ -8,8 +8,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
-from models import Solution, WorkDay
-from solver.pipeline import run_solver
+from scheduler.models import Solution, WorkDay
+from scheduler.solver.pipeline import run_solver
 
 _OUTPUT_FILE_ROOT = Path("outputs")
 _OUTPUT_ENDPOINT_ROOT = "/outputs"

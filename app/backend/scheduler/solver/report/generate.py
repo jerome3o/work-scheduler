@@ -5,8 +5,11 @@ from pathlib import Path
 from typing import Union
 import jinja2
 
-from models import Solution
-from solver.visualisation.solution import visualise_shifts, visualise_workloads
+from scheduler.models import Solution
+from scheduler.solver.visualisation.solution import (
+    visualise_shifts,
+    visualise_workloads,
+)
 
 _REPORT_ROOT = Path() / "outputs" / "reports"
 _STATIC_DIR = Path(__file__).parent / "static"
@@ -64,7 +67,7 @@ def build_context(
         "plots": {
             "shifts": _SHIFTS_PLOT_FILENAME,
             "workloads": _WORKLOAD_PLOT_FILENAME,
-        }
+        },
     }
 
 
@@ -77,7 +80,6 @@ def main():
     solution = Solution.parse_file("test_data/solver/workday_example_1.out.json")
     report_dir = _REPORT_ROOT / solution.meta.solution_id
     generate_report(solution, report_dir)
-
 
 
 if __name__ == "__main__":

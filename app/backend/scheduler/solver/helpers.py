@@ -3,8 +3,8 @@ from typing import Union, Tuple, List
 from datetime import datetime
 from pathlib import Path
 
-from models import WorkDay, TaskType, InfeasibleTask
-from solver.model_parameters import ModelParameters
+from scheduler.models import WorkDay, TaskType, InfeasibleTask
+from scheduler.solver.model_parameters import ModelParameters
 
 _logger = logging.getLogger(__name__)
 
