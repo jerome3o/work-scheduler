@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { StudySchedule, StudyScheduleProcessingResult } from "../models";
+import {
+  StudySchedule,
+  StudyScheduleProcessingResult,
+  GenerateWorkDayOptions,
+  StudyScheduleOptions,
+} from "../models";
 import { useFilePicker } from "use-file-picker";
 import ApiWrapper from "../apiWrapper";
 
@@ -13,6 +18,11 @@ export default function SchedulerApp() {
     []
   );
   const [roster, setRoster] = useState<File | undefined>(undefined);
+  const [rosterDay, setRosterDay] = useState<string | undefined>(undefined);
+
+  const [studyScheduleOptions, setStudyScheduleOptions] = useState<
+    StudyScheduleOptions[]
+  >([]);
 
   const apiWrapper = new ApiWrapper();
 
@@ -29,6 +39,10 @@ export default function SchedulerApp() {
         ...prevStudySchedules,
         { name: plainFiles[0].name, content: plainFiles[0] },
       ]);
+      setStudyScheduleOptions((prevOptions) => [
+        ...prevOptions,
+        { day: "", cohort: "" },
+      ]);
     },
   });
 
@@ -39,6 +53,9 @@ export default function SchedulerApp() {
   function removeStudySchedule(index: number) {
     setStudyScheduleList(
       studyScheduleList.filter((studySchedule, i) => i !== index)
+    );
+    setStudyScheduleOptions(
+      studyScheduleOptions.filter((studySchedule, i) => i !== index)
     );
   }
 
@@ -68,7 +85,11 @@ export default function SchedulerApp() {
 
     const workDay = await apiWrapper.generateWorkDay(
       studyScheduleFiles,
-      roster
+      roster,
+      {
+        studyScheduleOptions,
+        rosterDay: rosterDay ?? "",
+      }
     );
 
     console.log(workDay);
@@ -92,11 +113,30 @@ export default function SchedulerApp() {
           fileType="xlsx"
           processRoster={processRoster}
           changeRoster={setRoster}
+          rosterDay={rosterDay}
+          setRosterDay={setRosterDay}
         ></RosterUploader>
         <h3>Study Schedules:</h3>
         {studyScheduleList.map((studySchedule, index) => {
           return (
             <StudyOptions
+              // todo: tidy this up
+              day={studyScheduleOptions[index].day}
+              setDay={(day) =>
+                setStudyScheduleOptions((prevOptions) => {
+                  const newOptions = [...prevOptions];
+                  newOptions[index].day = day;
+                  return newOptions;
+                })
+              }
+              cohort={studyScheduleOptions[index].cohort}
+              setCohort={(cohort) =>
+                setStudyScheduleOptions((prevOptions) => {
+                  const newOptions = [...prevOptions];
+                  newOptions[index].cohort = cohort;
+                  return newOptions;
+                })
+              }
               key={studySchedule.name + index}
               studySchedule={studySchedule}
               processStudySchedule={processStudySchedule}

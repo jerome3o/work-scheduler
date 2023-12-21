@@ -1,4 +1,4 @@
-import { RosterProcessingResult, StudyScheduleProcessingResult, WorkDay } from "./models";
+import { RosterProcessingResult, StudyScheduleProcessingResult, WorkDay, GenerateWorkDayOptions } from "./models";
 
 export default class ApiWrapper {
     url: string;
@@ -30,13 +30,14 @@ export default class ApiWrapper {
     async generateWorkDay(
         studyScheduleFiles: File[],
         rosterFile: File,
+        additionalData: GenerateWorkDayOptions,
     ): Promise<WorkDay> {
         const formData = new FormData();
         studyScheduleFiles.forEach((file) =>
             formData.append("study_schedule_files", file, file.name)
         );
         formData.append("roster_file", rosterFile, rosterFile.name);
-        formData.append("additional_data", JSON.stringify({ something: "else" }));
+        formData.append("additional_data", JSON.stringify(additionalData));
 
         const response = await fetch(`${this.url}/process-files/build-workday`, {
             method: "POST",

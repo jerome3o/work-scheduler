@@ -7,10 +7,14 @@ export default function RosterUploader({
   fileType,
   processRoster,
   changeRoster,
+  rosterDay,
+  setRosterDay,
 }: {
   fileType: string;
   processRoster: (file: File) => Promise<RosterProcessingResult>;
   changeRoster: (file: File | undefined) => void;
+  rosterDay: string | undefined;
+  setRosterDay: (day: string | undefined) => void;
 }) {
   const { openFilePicker, filesContent, loading, clear } = useFilePicker({
     accept: `.${fileType}`,
@@ -33,6 +37,7 @@ export default function RosterUploader({
   function onClear() {
     setSelectedFile(undefined);
     changeRoster(undefined);
+    setRosterDay(undefined);
     setDayOptions([]);
     clear();
   }
@@ -48,7 +53,11 @@ export default function RosterUploader({
       <p>{selectedFile?.name ?? "Please choose a file"}</p>
       {selectedFile ? (
         <div className="button-layout">
-          <DaySelect options={dayOptions} />
+          <DaySelect
+            options={dayOptions}
+            value={rosterDay ?? ""}
+            setValue={setRosterDay}
+          />
           <button onClick={onClear}>x</button>
         </div>
       ) : (

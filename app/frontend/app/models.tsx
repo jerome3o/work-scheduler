@@ -12,20 +12,26 @@ interface StudyScheduleProcessingResult {
   cohorts: string[];
 }
 
-interface StudyScheduleInfo {
-  schedule: StudySchedule;
-  options: StudyScheduleProcessingResult | undefined;
-}
-
 interface WorkDay {
   tasks: string[];
   staffMembers: string[];
+}
+
+interface StudyScheduleOptions {
+  day: string;
+  cohort: string;
+}
+
+interface GenerateWorkDayOptions {
+  studyScheduleOptions: StudyScheduleOptions[];
+  rosterDay: string;
 }
 
 export {
   type StudySchedule,
   type RosterProcessingResult,
   type StudyScheduleProcessingResult,
-  type StudyScheduleInfo,
   type WorkDay,
+  type StudyScheduleOptions,
+  type GenerateWorkDayOptions,
 };
