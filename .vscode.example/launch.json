@@ -1,0 +1,60 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Backend",
+            "type": "python",
+            "request": "launch",
+            "program": "app/backend/scheduler/server.py",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/app/backend"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Process Roster",
+            "type": "python",
+            "request": "launch",
+            "program": "app/backend/scripts/run_process_roster.py",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/app/backend"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Process Study Schedule",
+            "type": "python",
+            "request": "launch",
+            "program": "app/backend/scripts/run_process_study_schedule.py",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/app/backend"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Build WorkDay",
+            "type": "python",
+            "request": "launch",
+            "program": "app/backend/scripts/run_build_workday.py",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/app/backend"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}
