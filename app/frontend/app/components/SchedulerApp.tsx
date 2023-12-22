@@ -85,6 +85,7 @@ export default function SchedulerApp() {
         rosterDay: rosterDay ?? "",
       }
     );
+    console.log(workDay);
   }
 
   return (
@@ -100,7 +101,7 @@ export default function SchedulerApp() {
           padding: "0 10px",
         }}
       >
-        <h1>Scheduler App</h1>
+        <h1>NZCR Scheduler</h1>
         <RosterUploader
           fileType="xlsx"
           processRoster={processRoster}
