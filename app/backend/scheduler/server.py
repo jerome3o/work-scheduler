@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
@@ -10,6 +12,8 @@ app = FastAPI()
 
 app.include_router(process_file_router)
 app.include_router(solve_router)
+
+Path(OUTPUT_FILE_ROOT).mkdir(parents=True, exist_ok=True)
 
 app.mount(
     OUTPUT_ENDPOINT_ROOT,

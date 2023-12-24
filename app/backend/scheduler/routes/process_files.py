@@ -4,6 +4,7 @@ from scheduler.models import (
     WorkDay,
     RosterProcessingResult,
     StudyScheduleProcessingResult,
+    GenerateWorkDayOptions,
 )
 
 
@@ -42,11 +43,13 @@ def build_workday(
     roster_file: UploadFile = File(...),
     additional_data: str = Form(...),
 ) -> WorkDay:
+    options = GenerateWorkDayOptions.model_validate_json(additional_data)
+
     # TODO(olivia): implement
 
     print(study_schedule_files)
     print(roster_file)
-    print(additional_data)
+    print(options)
     return WorkDay(
         staff_members=[],
         tasks=[],

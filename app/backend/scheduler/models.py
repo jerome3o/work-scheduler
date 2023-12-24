@@ -143,3 +143,18 @@ class RosterProcessingResult(BaseModel):
 class StudyScheduleProcessingResult(BaseModel):
     days: List[str]
     cohorts: List[str]
+
+
+class StudyScheduleOption(BaseModel):
+    day: str
+    cohort: str
+
+
+class GenerateWorkDayOptions(BaseModel):
+    study_schedule_options: List[StudyScheduleOption] = Field(
+        alias="studyScheduleOptions",
+    )
+    roster_day: str = Field(alias="rosterDay")
+
+    class Config:
+        populate_by_name = True

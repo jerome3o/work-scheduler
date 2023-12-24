@@ -1,4 +1,5 @@
 # import TestClient from fastapi.testclient
+import json
 
 from fastapi.testclient import TestClient
 
@@ -21,22 +22,22 @@ def main():
 
     response = client.post(
         "/api/process-files/build-workday",
-        files={
-            "study_schedule_files": [
-                open(_STUDY_SCHEDULE_FILE[0], "rb"),
-                open(_STUDY_SCHEDULE_FILE[1], "rb"),
-            ],
-            "roster_file": open(_ROSTER_FILE, "rb"),
-        },
+        files=[
+            ("study_schedule_files", open(_STUDY_SCHEDULE_FILE[0], "rb").read()),
+            ("study_schedule_files", open(_STUDY_SCHEDULE_FILE[1], "rb").read()),
+            ("roster_file", open(_ROSTER_FILE, "rb").read()),
+        ],
         # GenerateWorkDayOptions
         data={
-            "additional_data": {
-                "studyScheduleOptions": [
-                    {"day": "1", "cohort": "alpha"},
-                    {"day": "2", "cohort": "beta"},
-                ],
-                "rosterDay": "3",
-            }
+            "additional_data": json.dumps(
+                {
+                    "studyScheduleOptions": [
+                        {"day": "1", "cohort": "alpha"},
+                        {"day": "2", "cohort": "beta"},
+                    ],
+                    "rosterDay": "3",
+                }
+            ),
         },
     )
     print(response.json())
