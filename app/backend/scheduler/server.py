@@ -29,4 +29,4 @@ if __name__ == "__main__":
 
     from uvicorn import run
 
-    run(app="scheduler.server:app", reload=True)
+    run(app="scheduler.server:app", reload=True, host="0.0.0.0", port=8001)
