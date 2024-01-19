@@ -4,6 +4,7 @@ outputs/
 scratch/
 .vscode/
 *.xlsx
+staff.py
 
 
 # Byte-compiled / optimized / DLL files
