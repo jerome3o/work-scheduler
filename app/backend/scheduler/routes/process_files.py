@@ -31,14 +31,9 @@ def process_roster(
     # TODO(olivia): implement
 
     encrypted = BytesIO(roster_file.file.read())
-    decryped = BytesIO()
-    file = msoffcrypto.OfficeFile(encrypted)
+    decrypted = decrypt_file(encrypted)
 
-    # TODO: the password needs to be input
-    file.load_key(password=PASSWORD)
-    file.decrypt(decryped)
-
-    wb = openpyxl.load_workbook(decryped)
+    wb = openpyxl.load_workbook(decrypted)
     print(wb.sheetnames)
 
     wb.close()
@@ -74,24 +69,43 @@ def build_workday(
     options = GenerateWorkDayOptions.model_validate_json(additional_data)
 
     # TODO(olivia): implement
-    day = "MON 07 AUG"
 
-    current_date = datetime.now()
-    roster_date = datetime.strptime(day, "%a %d %b").replace(year=current_date.year)
+    encrypted = BytesIO(roster_file.file.read())
+    decrypted = decrypt_file(encrypted)
+
+    wb = openpyxl.load_workbook(decrypted)
+
+    # TODO: the day needs to be input on the FE
+    day = "MON 07 AUG"
 
     roster = get_staff_shifts(wb, day)
     staff = roster[0]
     staff_floor = roster[1]
+
+    current_date = datetime.now()
+    roster_date = datetime.strptime(day, "%a %d %b").replace(year=current_date.year)
     
-    get_staff_members(staff, staff_floor, roster_date)
+    staff_list = get_staff_members(staff, staff_floor, roster_date)
 
     print(study_schedule_files)
     print(roster_file)
     print(options)
     return WorkDay(
-        staff_members=[],
         tasks=[],
+        staff_members=staff_list,
+        relative_to=roster_date,
     )
+
+
+def decrypt_file(encrypted: BytesIO) -> BytesIO:
+    decrypted = BytesIO()
+    file = msoffcrypto.OfficeFile(encrypted)
+
+    # TODO: the password needs to be input
+    file.load_key(password=PASSWORD)
+    file.decrypt(decrypted)
+
+    return decrypted
 
 
 def get_staff_shifts(roster: openpyxl.Workbook, day: str):       #might need to create second instance of OP staff after OP schedule complete?
