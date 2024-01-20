@@ -35,7 +35,7 @@ def main():
                         {"day": "1", "cohort": "alpha"},
                         {"day": "2", "cohort": "beta"},
                     ],
-                    "rosterDay": "3",
+                    "rosterDay": "MON 07 AUG",
                 }
             ),
         },
