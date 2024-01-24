@@ -1,7 +1,7 @@
 import secrets
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -54,7 +54,7 @@ class StaffMember(BaseModel):
 class Task(BaseModel):
     study: str
     floor: str
-    patient: str
+    patient: Union[int, str]
     # time can be string, this is actually indicates it's none
     # TODO(o.kyle): make sure this still works now that time can't be a string or None.
     time: datetime
@@ -148,6 +148,7 @@ class StudyScheduleProcessingResult(BaseModel):
 class StudyScheduleOption(BaseModel):
     day: str
     cohort: str
+    patients: Union[int, str]
 
 
 class GenerateWorkDayOptions(BaseModel):

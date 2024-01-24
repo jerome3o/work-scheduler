@@ -23,17 +23,17 @@ def main():
     response = client.post(
         "/api/process-files/build-workday",
         files=[
-            ("study_schedule_files", open(_STUDY_SCHEDULE_FILE[0], "rb").read()),
-            ("study_schedule_files", open(_STUDY_SCHEDULE_FILE[1], "rb").read()),
-            ("roster_file", open(_ROSTER_FILE, "rb").read()),
+        ("study_schedule_files", ("Arctic Schedule of Assessments.xlsx", open(_STUDY_SCHEDULE_FILE[0], "rb"))),
+        ("study_schedule_files", ("Glow Schedule of Assessments.xlsx", open(_STUDY_SCHEDULE_FILE[1], "rb"))),
+        ("roster_file", ("example_roster.xlsx", open(_ROSTER_FILE, "rb"))),
         ],
         # GenerateWorkDayOptions
         data={
             "additional_data": json.dumps(
                 {
                     "studyScheduleOptions": [
-                        {"day": "1", "cohort": "alpha"},
-                        {"day": "2", "cohort": "beta"},
+                        {"day": "1", "cohort": "2", "patients": 2},
+                        {"day": "1", "cohort": "4", "patients": 4},
                     ],
                     "rosterDay": "MON 07 AUG",
                 }
