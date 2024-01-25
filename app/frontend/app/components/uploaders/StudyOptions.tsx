@@ -56,6 +56,7 @@ export default function StudyUploader({
       <h2>{studyScheduleWithOptions.studySchedule.name}</h2>
       <div className="button-layout">
       {/* Study Day text input field */}
+      <p>Day:</p>
       <input
           type="text"
           placeholder="Study Day"
@@ -65,6 +66,7 @@ export default function StudyUploader({
           }
         ></input>
         {/* Cohort text input field */}
+        <p>Cohort:</p>
         <input
           type="text"
           placeholder="Cohort"
@@ -74,6 +76,7 @@ export default function StudyUploader({
           }
         ></input>
         {/* patients text input field */}
+        <p>Cohort Size:</p>
         <input
           type="text"
           placeholder="Cohort Size"
