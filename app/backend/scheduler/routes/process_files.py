@@ -237,7 +237,6 @@ def create_task_list(study_schedule_files: BytesIO , options: StudyScheduleOptio
     tasks = []
 
     schedule = BytesIO(study_schedule_files.file.read())
-    wb = openpyxl.load_workbook(schedule)
     
     date_count = 1
     processed_schedule = {}
@@ -281,7 +280,7 @@ def create_task_list(study_schedule_files: BytesIO , options: StudyScheduleOptio
         if pt_token in str(first_cell) and date_count != 0: #take patients as the 2nd cell onwards, if Day i is read
             p = 0
             for cell_value in row[1:]:
-                if str(cell_value).strip().lower() == 'nurse' or p == options.patients:
+                if str(cell_value).strip().lower() == 'nurse' or str(p) == options.patients:
                     break
                 patients.append(cell_value)
                 p = p+1
