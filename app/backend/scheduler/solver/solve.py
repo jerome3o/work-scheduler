@@ -148,7 +148,7 @@ def build_and_solve(
 
 
 def solve(work_day: WorkDay) -> Solution:
-    original_work_day = work_day.copy()
+    original_work_day = work_day.model_copy()
 
     work_day, infeasible_tasks = prepare_work_day(work_day)
     model_parameters = build_matrices(work_day)
@@ -178,7 +178,7 @@ def main():
         work_day = load_work_day(data_file)
         solution = solve(work_day)
         output_file = Path(data_file).with_suffix(".out.json")
-        Path(output_file).write_text(solution.json(indent=2))
+        Path(output_file).write_text(solution.model_dump_json(indent=2))
 
         break
 

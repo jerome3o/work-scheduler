@@ -7,6 +7,8 @@ import msoffcrypto
 from fastapi import APIRouter, File, Form, UploadFile
 from datetime import time, timedelta, datetime
 from scheduler.staff import SKILLSET_MAP
+from pathlib import Path
+from solver.pipeline import run_solver
 
 from io import BytesIO
 
@@ -106,9 +108,14 @@ def build_workday(
 
     #------------Workday Generation------------#
 
-    #print(study_schedule_files)
-    #print(roster_file)
-    #print(options)
+    workday = create_workday(task_list, staff_list, roster_date, Path.cwd())
+
+    run_solver(
+    work_day=workday,
+    output_dir="outputs/example_report",
+    open_browser=True,
+    )
+    
     return WorkDay(
         tasks=task_list,
         staff_members=staff_list,
@@ -124,6 +131,8 @@ def create_workday(task_list: List[Task], staff_list: List[StaffMember], roster_
 
     with open(json_file_path, 'w') as json_file:
         json_file.write(workday.model_dump_json(indent=4))
+
+    return workday
 
 
 def decrypt_file(encrypted: BytesIO) -> BytesIO:
