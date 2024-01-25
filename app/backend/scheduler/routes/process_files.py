@@ -51,8 +51,9 @@ def process_roster(
 @router.post("/study-schedule", response_model=StudyScheduleProcessingResult)
 def process_study_schedule(
     study_schedule_file: UploadFile = File(...),
+    additional_data: str = Form(...),
 ) -> StudyScheduleProcessingResult:
-    # TODO(olivia): implement
+    options = GenerateWorkDayOptions.model_validate_json(additional_data)
 
     f = BytesIO(study_schedule_file.file.read())
 
@@ -60,8 +61,9 @@ def process_study_schedule(
     print(wb.sheetnames)
 
     return StudyScheduleProcessingResult(
-        days=wb.sheetnames,
-        cohorts=["alpha", "beta", "from server"],
+        days=options.study_schedule_options.days,
+        cohorts=options.study_schedule_options.cohorts,
+        patients=options.study_schedule_options.patients,
     )
 
 
@@ -234,7 +236,6 @@ def find_token_row_index(token: str, df: pd.DataFrame) -> pd.Index:
 
 def create_task_list(study_schedule_files: BytesIO , options: StudyScheduleOption, study_floors: Dict[str, List[str]], schedule_name: str, roster_date: datetime):
 
-    end_token = "Workbook"
     tasks = []
 
     schedule = BytesIO(study_schedule_files.file.read())
@@ -252,6 +253,7 @@ def create_task_list(study_schedule_files: BytesIO , options: StudyScheduleOptio
     
     current_day = options.day
     pt_token = "Day " + str(current_day)
+    end_token = "Workbook"
     duration = 0
     fit = 0
 

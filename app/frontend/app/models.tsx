@@ -10,6 +10,7 @@ interface RosterProcessingResult {
 interface StudyScheduleProcessingResult {
   days: string[];
   cohorts: string[];
+  patients: string[];
 }
 
 interface WorkDay {
@@ -20,6 +21,7 @@ interface WorkDay {
 interface StudyScheduleOptions {
   day: string;
   cohort: string;
+  patients: string;
 }
 
 interface GenerateWorkDayOptions {

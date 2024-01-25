@@ -33,15 +33,18 @@ export default function StudyUploader({
   function handleChange({
     newDay,
     newCohort,
+    newPatients,
   }: {
     newDay: string | undefined;
     newCohort: string | undefined;
+    newPatients: string | undefined;
   }) {
     setStudyScheduleWithOptions({
       ...studyScheduleWithOptions,
       options: {
         day: newDay ?? studyScheduleWithOptions.options.day,
         cohort: newCohort ?? studyScheduleWithOptions.options.cohort,
+        patients: newPatients ?? studyScheduleWithOptions.options.patients,
       },
     });
   }
@@ -52,20 +55,31 @@ export default function StudyUploader({
     <div className="uploader-container">
       <h2>{studyScheduleWithOptions.studySchedule.name}</h2>
       <div className="button-layout">
-        <DaySelect
-          options={options?.days ?? []}
+      {/* Study Day text input field */}
+      <input
+          type="text"
+          placeholder="Study Day"
           value={studyScheduleWithOptions.options.day}
-          setValue={(value: string) =>
-            handleChange({ newDay: value, newCohort: undefined })
+          onChange={(e) =>
+            handleChange({ newCohort: undefined, newDay: e.target.value, newPatients: undefined })
           }
-        />
-        {/* text input that has placeholder text "cohort" */}
+        ></input>
+        {/* Cohort text input field */}
         <input
           type="text"
-          placeholder="cohort name"
+          placeholder="Cohort"
           value={studyScheduleWithOptions.options.cohort}
           onChange={(e) =>
-            handleChange({ newCohort: e.target.value, newDay: undefined })
+            handleChange({ newCohort: e.target.value, newDay: undefined, newPatients: undefined})
+          }
+        ></input>
+        {/* patients text input field */}
+        <input
+          type="text"
+          placeholder="Cohort Size"
+          value={studyScheduleWithOptions.options.patients}
+          onChange={(e) =>
+            handleChange({ newCohort: undefined, newDay: undefined, newPatients: e.target.value })
           }
         ></input>
         <button onClick={removeFunction}>x</button>

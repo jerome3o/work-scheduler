@@ -35,7 +35,7 @@ export default function SchedulerApp() {
         ...prevStudySchedules,
         {
           studySchedule: { name: plainFiles[0].name, content: plainFiles[0] },
-          options: { day: "", cohort: "" },
+          options: { day: "", cohort: "", patients: ""},
         },
       ]);
     },
