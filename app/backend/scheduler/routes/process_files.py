@@ -51,9 +51,7 @@ def process_roster(
 @router.post("/study-schedule", response_model=StudyScheduleProcessingResult)
 def process_study_schedule(
     study_schedule_file: UploadFile = File(...),
-    additional_data: str = Form(...),
 ) -> StudyScheduleProcessingResult:
-    options = GenerateWorkDayOptions.model_validate_json(additional_data)
 
     f = BytesIO(study_schedule_file.file.read())
 
@@ -61,9 +59,9 @@ def process_study_schedule(
     print(wb.sheetnames)
 
     return StudyScheduleProcessingResult(
-        days=options.study_schedule_options.days,
-        cohorts=options.study_schedule_options.cohorts,
-        patients=options.study_schedule_options.patients,
+        days=[],
+        cohorts=[],
+        patients=[],
     )
 
 
